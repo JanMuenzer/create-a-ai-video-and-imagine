@@ -1,0 +1,16 @@
+{
+  "name": "Nexus AI — Uncensored Video & Imagine Studio",
+  "short_name": "Nexus AI",
+  "description": "Uncensored AI Video and Image generation studio powered by Flux and AnimateDiff.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08090d",
+  "theme_color": "#08090d",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%238b5cf6'/><stop offset='50%' stop-color='%23ec4899'/><stop offset='100%' stop-color='%2306b6d4'/></linearGradient></defs><circle cx='50' cy='50' r='46' fill='%230b0d14' stroke='url(%23g)' stroke-width='4'/><polygon points='40,32 70,50 40,68' fill='url(%23g)'/><circle cx='50' cy='50' r='18' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-dasharray='4 3'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
