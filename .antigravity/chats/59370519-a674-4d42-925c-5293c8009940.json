@@ -3,6 +3,19 @@
   "name": "Create a Ai Video and Imagine",
   "createdAt": "2026-10-04T19:52:59.999Z",
   "filename": "59370519-a674-4d42-925c-5293c8009940.json",
-  "geminiStarted": false,
-  "messages": []
+  "geminiStarted": true,
+  "messages": [
+    {
+      "id": "89760edf-e415-4424-bea3-ac3f5b0dd7db",
+      "role": "user",
+      "content": "Create a Ai Video and Imagine App use GitHub",
+      "status": "cancelled",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-10-04T19:55:05.614Z",
+      "sender": "ios",
+      "is_cancelled": true
+    }
+  ]
 }
