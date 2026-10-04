@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Nexus AI — Uncensored Video & Imagine Studio</title>
+  <meta name="description" content="Uncensored AI Video and Image generation studio powered by open models, Flux, AnimateDiff, and GitHub integration.">
+  <meta name="theme-color" content="#090a0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%238b5cf6'/><stop offset='50%' stop-color='%23ec4899'/><stop offset='100%' stop-color='%2306b6d4'/></linearGradient></defs><circle cx='50' cy='50' r='46' fill='%230b0d14' stroke='url(%23g)' stroke-width='4'/><polygon points='40,32 70,50 40,68' fill='url(%23g)'/><circle cx='50' cy='50' r='18' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-dasharray='4 3'/></svg>">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              accent: '#ec4899',
+              cyan: '#06b6d4',
+              neon: '#a855f7',
+              dark: '#08090d',
+              surface: '#11131a',
+              card: '#161922',
+              border: '#232838'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['Orbitron', 'Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            'neon': '0 0 25px -5px rgba(139, 92, 246, 0.4), 0 0 10px -3px rgba(236, 72, 153, 0.3)',
+            'glow-cyan': '0 0 25px -5px rgba(6, 182, 212, 0.4)',
+            'glow-pink': '0 0 25px -5px rgba(236, 72, 153, 0.4)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-brand-dark text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-500 selection:text-white pb-24 md:pb-6">
+
+  <!-- Ambient Glow Effects -->
+  <div class="fixed top-0 left-1/4 -z-10 w-96 h-96 bg-brand-600/15 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-10 right-10 -z-10 w-96 h-96 bg-brand-accent/15 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 w-[600px] h-[600px] bg-brand-cyan/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-brand-dark/85 border-b border-brand-border/70 px-4 lg:px-8 py-3 transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <!-- App Brand & Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('imagine')">
+        <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-brand-accent to-brand-cyan p-[1px] shadow-neon">
+          <div class="w-full h-full bg-brand-dark rounded-xl flex items-center justify-center">
+            <i class="fa-solid fa-wand-magic-sparkles text-transparent bg-clip-text bg-gradient-to-tr from-brand-500 via-pink-400 to-cyan-400 text-lg"></i>
+          </div>
+          <span class="absolute -top-1 -right-1 flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+          </span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-bold text-lg md:text-xl tracking-wider text-white">NEXUS<span class="text-brand-accent">.AI</span></h1>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/40 uppercase tracking-widest font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-lock-open text-[9px]"></i> UNCENSORED
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium hidden sm:block">AI Video & Imagine Creative Studio</p>
+        </div>
+      </div>
+
+      <!-- Navigation Desktop Tabs -->
+      <nav class="hidden md:flex items-center gap-1 bg-brand-surface/90 p-1.5 rounded-xl border border-brand-border/60">
+        <button onclick="switchTab('imagine')" id="nav-btn-imagine" class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all">
+          <i class="fa-solid fa-image text-brand-500"></i> Imagine (Image)
+        </button>
+        <button onclick="switchTab('video')" id="nav-btn-video" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+          <i class="fa-solid fa-film text-brand-cyan"></i> Video Studio
+        </button>
+        <button onclick="switchTab('gallery')" id="nav-btn-gallery" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+          <i class="fa-solid fa-layer-group text-pink-400"></i> Gallery
+          <span id="gallery-count-badge" class="ml-1 text-[10px] px-1.5 py-0.5 bg-brand-border rounded-full text-slate-300">0</span>
+        </button>
+        <button onclick="switchTab('templates')" id="nav-btn-templates" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all text-slate-400 hover:text-white">
+          <i class="fa-solid fa-fire text-amber-400"></i> Prompts Vault
+        </button>
+      </nav>
+
+      <!-- Action Buttons (GitHub, Settings) -->
+      <div class="flex items-center gap-2">
+        <!-- Uncensored Switch Pill -->
+        <button id="uncensored-toggle-btn" onclick="toggleUncensoredGlobal()" title="Toggle Uncensored Filter Status"
+          class="relative px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 border transition-all duration-300 bg-red-950/40 text-red-300 border-red-600/50 shadow-[0_0_15px_-3px_rgba(239,68,68,0.3)]">
+          <i class="fa-solid fa-shield-halved text-red-400" id="uncensored-icon"></i>
+          <span class="hidden sm:inline" id="uncensored-label">Uncensored: ON</span>
+        </button>
+
+        <!-- GitHub Integration Button -->
+        <button onclick="openGitHubModal()" class="px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 bg-brand-surface border border-brand-border hover:border-slate-500 transition-all text-slate-200 hover:text-white group">
+          <i class="fa-brands fa-github text-base text-slate-200 group-hover:text-white group-hover:rotate-12 transition-transform"></i>
+          <span class="hidden lg:inline font-mono">GitHub</span>
+          <span id="github-sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+        </button>
+
+        <!-- Settings Button -->
+        <button onclick="openSettingsModal()" class="p-2 rounded-lg bg-brand-surface border border-brand-border text-slate-300 hover:text-white hover:border-brand-500 transition-all">
+          <i class="fa-solid fa-sliders text-sm"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- GitHub Repo Live Bar -->
+  <div class="bg-gradient-to-r from-brand-surface via-brand-card to-brand-surface border-b border-brand-border/60 py-1.5 px-4 text-xs font-mono text-slate-400 flex items-center justify-between overflow-x-auto">
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2 shrink-0">
+        <i class="fa-solid fa-code-branch text-brand-500"></i>
+        <span>Repo:</span>
+        <a href="https://github.com/JanMuenzer/create-a-ai-video-and-imagine" target="_blank" rel="noopener noreferrer" class="text-brand-cyan hover:underline font-semibold flex items-center gap-1">
+          JanMuenzer/create-a-ai-video-and-imagine <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+        </a>
+      </div>
+      <div class="flex items-center gap-3 shrink-0 text-[11px]">
+        <span class="text-emerald-400 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Auto-Sync Active
+        </span>
+        <span class="text-slate-600 hidden sm:inline">|</span>
+        <span class="text-slate-400 hidden sm:inline">Branch: <strong class="text-slate-200">main</strong></span>
+        <a href="https://github.com/JanMuenzer/create-a-ai-video-and-imagine/stargazers" target="_blank" class="px-2 py-0.5 rounded bg-brand-border/60 hover:bg-brand-border text-amber-300 flex items-center gap-1 transition-colors">
+          <i class="fa-solid fa-star text-[10px]"></i> Star
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Workspace Container -->
+  <main class="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6 space-y-6">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: IMAGINE STUDIO (AI IMAGE GENERATOR)  -->
+    <!-- ========================================== -->
+    <section id="section-imagine" class="tab-content transition-all duration-300">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Controls Column (Left) -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="glass-panel p-5 rounded-2xl border border-brand-border bg-brand-surface/90 shadow-xl space-y-5">
+
+            <!-- Header & Mode Selector -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-brand-600/20 text-brand-500 flex items-center justify-center">
+                  <i class="fa-solid fa-paintbrush text-sm"></i>
+                </div>
+                <div>
+                  <h2 class="font-display font-bold text-base text-white">Imagine Studio</h2>
+                  <p class="text-xs text-slate-400">Unfiltered Text & Image-to-Image</p>
+                </div>
+              </div>
+
+              <!-- Quick Presets Button -->
+              <button onclick="switchTab('templates')" class="text-xs text-brand-cyan hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-bolt"></i> Ideas Vault
+              </button>
+            </div>
+
+            <!-- Generation Mode Tabs (Text-to-Image vs Image-to-Image) -->
+            <div class="grid grid-cols-2 gap-2 bg-brand-card p-1 rounded-xl border border-brand-border/60 text-xs font-semibold">
+              <button id="imagine-mode-txt2img" onclick="setImagineInputMode('txt2img')" class="py-2 rounded-lg bg-brand-600 text-white shadow transition-all flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-font"></i> Text to Image
+              </button>
+              <button id="imagine-mode-img2img" onclick="setImagineInputMode('img2img')" class="py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-wand-magic"></i> Image Remix
+              </button>
+            </div>
+
+            <!-- Image-to-Image Reference Upload (Hidden by default) -->
+            <div id="img2img-upload-container" class="hidden space-y-2">
+              <label class="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                <span>Reference Image (Remix Source)</span>
+                <span class="text-[10px] text-slate-400">PNG / JPG</span>
+              </label>
+              <div id="dropzone-image" onclick="document.getElementById('img2img-file-input').click()" 
+                class="border-2 border-dashed border-brand-border hover:border-brand-500 rounded-xl p-4 text-center cursor-pointer bg-brand-dark/50 transition-all flex flex-col items-center justify-center gap-2 group">
+                <input type="file" id="img2img-file-input" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                <div id="img2img-preview-box" class="hidden w-full max-h-40 rounded-lg overflow-hidden relative">
+                  <img id="img2img-preview-img" src="" alt="Reference Preview" class="w-full h-36 object-cover rounded-lg">
+                  <button onclick="clearImageUpload(event)" class="absolute top-2 right-2 bg-black/70 hover:bg-red-600 text-white p-1 rounded-md text-xs transition-colors">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+                <div id="img2img-upload-prompt" class="flex flex-col items-center">
+                  <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 group-hover:text-brand-500 transition-colors"></i>
+                  <p class="text-xs text-slate-300 font-medium mt-1">Tap to upload reference image</p>
+                  <p class="text-[10px] text-slate-500">AI transforms and remixes this image</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prompt Input Box -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label for="prompt-input" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-quote-left text-brand-500 text-[10px]"></i> Creative Prompt
+                </label>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="enhanceCurrentPrompt()" class="text-[11px] text-brand-cyan hover:text-cyan-300 font-medium flex items-center gap-1 px-2 py-0.5 rounded bg-brand-cyan/10 border border-brand-cyan/30 transition-all" title="Enrich prompt with camera, lighting, and cinematic realism">
+                    <i class="fa-solid fa-wand-sparkles text-[10px]"></i> Enhance AI
+                  </button>
+                  <button type="button" onclick="randomizePrompt()" class="text-[11px] text-pink-400 hover:text-pink-300 font-medium flex items-center gap-1 px-2 py-0.5 rounded bg-pink-500/10 border border-pink-500/30 transition-all" title="Pick an uncensored random prompt">
+                    <i class="fa-solid fa-shuffle text-[10px]"></i> Random
+                  </button>
+                </div>
+              </div>
+              <div class="relative">
+                <textarea id="prompt-input" rows="3" 
+                  class="w-full rounded-xl bg-brand-dark/80 border border-brand-border focus:border-brand-500 focus:ring-1 focus:ring-brand-500 p-3 text-sm text-slate-100 placeholder-slate-500 resize-none transition-all outline-none"
+                  placeholder="Describe anything without limits... e.g. Cyberpunk ronin with glowing katana on a neon rainy rooftop, cinematic 8k octane render, volumetric lighting"></textarea>
+                <button type="button" onclick="clearPrompt()" class="absolute bottom-2.5 right-2.5 text-slate-500 hover:text-slate-300 text-xs p-1" title="Clear prompt">
+                  <i class="fa-solid fa-circle-xmark"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Negative Prompt Accordion (Uncensored override) -->
+            <div class="space-y-1">
+              <button type="button" onclick="toggleNegativePrompt()" class="text-xs font-medium text-slate-400 hover:text-slate-200 flex items-center justify-between w-full py-1">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-ban text-red-400 text-[10px]"></i> Negative Prompt (What to exclude)
+                </span>
+                <i id="neg-chevron" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
+              </button>
+              <div id="negative-prompt-container" class="hidden">
+                <textarea id="negative-prompt-input" rows="2"
+                  class="w-full rounded-xl bg-brand-dark/80 border border-brand-border focus:border-red-500/50 focus:ring-1 focus:ring-red-500/30 p-2.5 text-xs text-slate-300 placeholder-slate-600 resize-none outline-none"
+                  placeholder="blurry, bad anatomy, deformed fingers, low quality, artifacts, watermark, censored bars">blurry, distorted, low quality, bad anatomy, extra limbs, watermark, artifacts</textarea>
+              </div>
+            </div>
+
+            <!-- AI Model Selector -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                <span>AI Engine / Checkpoint</span>
+                <span class="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                  <i class="fa-solid fa-circle-check text-[9px]"></i> Free High-Res
+                </span>
+              </label>
+              <select id="model-select" class="w-full rounded-xl bg-brand-dark/80 border border-brand-border focus:border-brand-500 text-sm text-slate-200 p-2.5 outline-none font-sans">
+                <option value="flux" selected>Flux Schnell (Top Quality Realism & Coherence)</option>
+                <option value="flux-realism">Flux Photorealism (Ultra 8k Human Skin & Lighting)</option>
+                <option value="flux-anime">Flux Anime & Stylized (Vibrant Colors, Cel Shading)</option>
+                <option value="flux-3d">Flux 3D Octane Render (CGI, Pixar & Unreal Engine)</option>
+                <option value="turbo">Turbo Lightning (Sub-Second Ultra Fast)</option>
+                <option value="custom">Custom Endpoint (Fal.ai / Replicate / Local WebUI)</option>
+              </select>
+            </div>
+
+            <!-- Aspect Ratio Selector -->
+            <div class="space-y-2">
+              <label class="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                <span>Aspect Ratio</span>
+                <span id="aspect-ratio-dims" class="font-mono text-[10px] text-brand-cyan">1024 × 1024 (1:1)</span>
+              </label>
+              <div class="grid grid-cols-5 gap-1.5">
+                <button type="button" onclick="setAspectRatio('1:1', 1024, 1024)" class="aspect-btn active p-2 rounded-xl bg-brand-card border border-brand-500 text-center transition-all flex flex-col items-center gap-1 text-slate-200 hover:text-white">
+                  <div class="w-4 h-4 border-2 border-current rounded-sm"></div>
+                  <span class="text-[10px] font-mono">1:1</span>
+                </button>
+                <button type="button" onclick="setAspectRatio('9:16', 768, 1344)" class="aspect-btn p-2 rounded-xl bg-brand-card border border-brand-border text-center transition-all flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+                  <div class="w-3 h-5 border-2 border-current rounded-sm"></div>
+                  <span class="text-[10px] font-mono">9:16</span>
+                </button>
+                <button type="button" onclick="setAspectRatio('16:9', 1344, 768)" class="aspect-btn p-2 rounded-xl bg-brand-card border border-brand-border text-center transition-all flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+                  <div class="w-5 h-3 border-2 border-current rounded-sm"></div>
+                  <span class="text-[10px] font-mono">16:9</span>
+                </button>
+                <button type="button" onclick="setAspectRatio('4:3', 1024, 768)" class="aspect-btn p-2 rounded-xl bg-brand-card border border-brand-border text-center transition-all flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+                  <div class="w-4.5 h-3.5 border-2 border-current rounded-sm"></div>
+                  <span class="text-[10px] font-mono">4:3</span>
+                </button>
+                <button type="button" onclick="setAspectRatio('21:9', 1408, 600)" class="aspect-btn p-2 rounded-xl bg-brand-card border border-brand-border text-center transition-all flex flex-col items-center gap-1 text-slate-400 hover:text-white">
+                  <div class="w-6 h-2.5 border-2 border-current rounded-sm"></div>
+                  <span class="text-[10px] font-mono">21:9</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Art Style Chips -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-slate-300">Style Modulation</label>
+              <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+                <button type="button" onclick="applyStylePreset('')" class="style-chip active px-2.5 py-1 rounded-lg bg-brand-border text-slate-200 shrink-0 text-[11px] font-medium border border-brand-500">None (Raw)</button>
+                <button type="button" onclick="applyStylePreset('photorealistic 8k uhd, dslr, soft lighting, award winning portrait photography, highly detailed')" class="style-chip px-2.5 py-1 rounded-lg bg-brand-card text-slate-400 hover:text-white shrink-0 text-[11px] font-medium border border-brand-border">Photoreal</button>
+                <button type="button" onclick="applyStylePreset('cyberpunk aesthetics, neon lights, volumetric rain reflections, futuristic mega-city, blade runner vibe')" class="style-chip px-2.5 py-1 rounded-lg bg-brand-card text-slate-400 hover:text-white shrink-0 text-[11px] font-medium border border-brand-border">Cyberpunk</button>
+                <button type="button" onclick="applyStylePreset('dark fantasy, gothic, eerie atmosphere, dramatic chiaroscuro lighting, oil painting style')" class="style-chip px-2.5 py-1 rounded-lg bg-brand-card text-slate-400 hover:text-white shrink-0 text-[11px] font-medium border border-brand-border">Dark Fantasy</button>
+                <button type="button" onclick="applyStylePreset('anime masterpiece, makoto shinkai lighting, vibrant cel shading, detailed background, 4k')" class="style-chip px-2.5 py-1 rounded-lg bg-brand-card text-slate-400 hover:text-white shrink-0 text-[11px] font-medium border border-brand-border">Anime</button>
+                <button type="button" onclick="applyStylePreset('surrealism, dreamlike, salvador dali style, vivid vibrant colors, mindbending composition')" class="style-chip px-2.5 py-1 rounded-lg bg-brand-card text-slate-400 hover:text-white shrink-0 text-[11px] font-medium border border-brand-border">Surreal</button>
+                <button type="button" onclick="applyStylePreset('cinematic film still, 35mm photograph, anamorphic lens, kodak portra 400, shallow depth of field')" class="style-chip px-2.5 py-1 rounded-lg bg-brand-card text-slate-400 hover:text-white shrink-0 text-[11px] font-medium border border-brand-border">35mm Film</button>
+              </div>
+            </div>
+
+            <!-- Advanced Sliders (Seed, Steps, Guidance) -->
+            <details class="text-xs group">
+              <summary class="cursor-pointer text-slate-400 hover:text-slate-200 font-medium flex items-center justify-between py-1">
+                <span>Advanced Synthesis Parameters</span>
+                <i class="fa-solid fa-chevron-down group-open:rotate-180 transition-transform"></i>
+              </summary>
+              <div class="pt-3 space-y-3">
+                <div class="space-y-1">
+                  <div class="flex justify-between text-[11px] text-slate-400">
+                    <span>Seed</span>
+                    <button type="button" onclick="randomizeSeed()" class="text-brand-cyan hover:underline">Randomize</button>
+                  </div>
+                  <input type="number" id="seed-input" value="-1" class="w-full bg-brand-dark p-2 rounded-lg border border-brand-border text-slate-200 font-mono text-xs outline-none">
+                  <p class="text-[10px] text-slate-500">-1 for random seed each time</p>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-300">Prompt Auto-Enhance</span>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="auto-enhance-toggle" checked class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-500"></div>
+                  </label>
+                </div>
+              </div>
+            </details>
+
+            <!-- Generate Action Button -->
+            <button id="btn-generate-image" onclick="generateImage()" 
+              class="w-full py-3.5 px-4 rounded-xl font-display font-bold text-sm tracking-wide bg-gradient-to-r from-brand-600 via-brand-neon to-brand-accent hover:opacity-95 text-white shadow-neon flex items-center justify-center gap-2 transform active:scale-[0.98] transition-all">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span id="btn-generate-text">GENERATE UNRESTRICTED IMAGE</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Preview & Output Canvas Column (Right) -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+          <div class="glass-panel p-5 rounded-2xl border border-brand-border bg-brand-surface/90 shadow-xl flex-1 flex flex-col">
+            
+            <!-- Output Header Bar -->
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-brand-border/60">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse"></span>
+                <h3 class="text-sm font-semibold text-white">Live Canvas</h3>
+                <span id="gen-timer" class="text-xs font-mono text-slate-400 hidden">0.0s</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="btn-copy-prompt" onclick="copyCurrentPrompt()" class="px-2.5 py-1 text-xs rounded-lg bg-brand-card hover:bg-brand-border text-slate-300 hover:text-white border border-brand-border/80 transition-all flex items-center gap-1" title="Copy Prompt">
+                  <i class="fa-solid fa-copy"></i> <span class="hidden sm:inline">Copy</span>
+                </button>
+                <button id="btn-animate-this" onclick="sendImageToVideoStudio()" class="px-2.5 py-1 text-xs rounded-lg bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-500/40 transition-all flex items-center gap-1.5 font-medium shadow-[0_0_10px_rgba(6,182,212,0.2)]" title="Turn this image into a video">
+                  <i class="fa-solid fa-film"></i> <span>Animate to Video</span>
+                </button>
+                <button id="btn-download-img" onclick="downloadCurrentImage()" class="px-2.5 py-1 text-xs rounded-lg bg-brand-500/20 hover:bg-brand-500/40 text-brand-300 border border-brand-500/40 transition-all flex items-center gap-1" title="Download High-Res">
+                  <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Save</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Canvas View Area -->
+            <div id="image-display-wrapper" class="relative flex-1 min-h-[380px] lg:min-h-[480px] rounded-xl bg-brand-dark/90 border border-brand-border/80 overflow-hidden flex items-center justify-center group">
+              
+              <!-- Placeholder State (Before first generation) -->
+              <div id="image-placeholder" class="text-center p-8 space-y-3 max-w-sm">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center text-brand-500 text-2xl shadow-neon">
+                  <i class="fa-solid fa-palette"></i>
+                </div>
+                <h4 class="font-display font-semibold text-slate-200">Creative Canvas Ready</h4>
+                <p class="text-xs text-slate-400">Enter your prompt or select a preset to generate unfiltered, high-resolution AI art.</p>
+                <div class="pt-2 flex flex-wrap gap-2 justify-center">
+                  <button onclick="quickPrompt('Cyberpunk assassin on futuristic Tokyo rainy highway, neon reflections, highly detailed 8k')" class="text-[11px] px-2.5 py-1 rounded-full bg-brand-card hover:bg-brand-border text-slate-300 border border-brand-border/60 transition-colors">
+                    ⚡ Cyberpunk City
+                  </button>
+                  <button onclick="quickPrompt('Gothic sorceress in ethereal obsidian throne room, glowing purple energy, octane render, masterpiece')" class="text-[11px] px-2.5 py-1 rounded-full bg-brand-card hover:bg-brand-border text-slate-300 border border-brand-border/60 transition-colors">
+                    🔮 Dark Sorceress
+                  </button>
+                </div>
+              </div>
+
+              <!-- Loading State -->
+              <div id="image-loading-spinner" class="hidden absolute inset-0 bg-brand-dark/90 backdrop-blur-md flex flex-col items-center justify-center z-20 space-y-4">
+                <div class="relative w-20 h-20">
+                  <div class="w-20 h-20 rounded-full border-4 border-brand-border border-t-brand-500 animate-spin"></div>
+                  <div class="absolute inset-2 rounded-full border-4 border-brand-border border-b-brand-accent animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                  <div class="absolute inset-0 flex items-center justify-center text-xs font-mono text-brand-cyan">AI</div>
+                </div>
+                <div class="text-center space-y-1">
+                  <p id="image-loading-text" class="font-display font-bold text-sm text-slate-100">Synthesizing Uncensored Latents...</p>
+                  <p class="text-xs text-slate-400 font-mono">Running neural diffusion via Flux</p>
+                </div>
+              </div>
+
+              <!-- Rendered Image -->
+              <img id="current-image-result" src="" alt="AI Output" class="hidden max-h-full max-w-full object-contain rounded-lg transition-transform duration-300 shadow-2xl">
+              
+              <!-- Overlay Hover Controls -->
+              <div id="image-overlay-controls" class="hidden absolute bottom-3 right-3 flex items-center gap-2 bg-brand-dark/80 backdrop-blur-md p-1.5 rounded-xl border border-brand-border">
+                <button onclick="openFullscreenModal()" class="p-2 text-slate-300 hover:text-white hover:bg-brand-border rounded-lg text-xs" title="Fullscreen Preview">
+                  <i class="fa-solid fa-expand"></i>
+                </button>
+                <button onclick="shareMedia()" class="p-2 text-slate-300 hover:text-white hover:bg-brand-border rounded-lg text-xs" title="Share">
+                  <i class="fa-solid fa-share-nodes"></i>
+                </button>
+                <button onclick="syncCurrentToGitHub()" class="p-2 text-slate-300 hover:text-white hover:bg-brand-border rounded-lg text-xs" title="Save to GitHub Repo">
+                  <i class="fa-brands fa-github text-brand-cyan"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Details Footer -->
+            <div id="image-metadata-bar" class="hidden mt-3 pt-3 border-t border-brand-border/60 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-brand-card text-brand-cyan font-mono" id="meta-resolution">1024x1024</span>
+                <span class="px-2 py-0.5 rounded bg-brand-card text-pink-400 font-mono" id="meta-model">Flux</span>
+                <span class="px-2 py-0.5 rounded bg-brand-card text-amber-300 font-mono" id="meta-seed">Seed: 42</span>
+              </div>
+              <p id="meta-prompt-snippet" class="text-slate-400 truncate max-w-xs italic"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: VIDEO STUDIO (AI VIDEO GENERATOR)   -->
+    <!-- ========================================== -->
+    <section id="section-video" class="tab-content hidden transition-all duration-300">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Controls Column (Left) -->
+        <div class="lg:col-span-5 space-y-5">
+          <div class="glass-panel p-5 rounded-2xl border border-brand-border bg-brand-surface/90 shadow-xl space-y-5">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-brand-cyan/20 text-brand-cyan flex items-center justify-center">
+                  <i class="fa-solid fa-video text-sm"></i>
+                </div>
+                <div>
+                  <h2 class="font-display font-bold text-base text-white">Video Studio</h2>
+                  <p class="text-xs text-slate-400">AnimateDiff, Dynamic Motion & Video</p>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40">
+                MP4 / WebM Engine
+              </span>
+            </div>
+
+            <!-- Video Generation Mode: Text-to-Video vs Image-to-Video -->
+            <div class="grid grid-cols-2 gap-2 bg-brand-card p-1 rounded-xl border border-brand-border/60 text-xs font-semibold">
+              <button id="video-mode-txt2vid" onclick="setVideoInputMode('txt2vid')" class="py-2 rounded-lg bg-brand-cyan text-brand-dark font-bold shadow transition-all flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-film"></i> Text to Video
+              </button>
+              <button id="video-mode-img2vid" onclick="setVideoInputMode('img2vid')" class="py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-image"></i> Image to Video
+              </button>
+            </div>
+
+            <!-- Source Image Box (Visible when Image-to-Video is selected) -->
+            <div id="video-img-source-container" class="hidden space-y-2">
+              <label class="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                <span>Keyframe Source Image</span>
+                <button type="button" onclick="loadLatestImagineImageIntoVideo()" class="text-brand-cyan hover:underline text-[11px]">
+                  Use Last Imagine Image
+                </button>
+              </label>
+              <div onclick="document.getElementById('video-source-file-input').click()"
+                class="border-2 border-dashed border-brand-border hover:border-brand-cyan rounded-xl p-3 text-center cursor-pointer bg-brand-dark/50 transition-all flex flex-col items-center justify-center min-h-[100px] relative group">
+                <input type="file" id="video-source-file-input" accept="image/*" class="hidden" onchange="handleVideoSourceUpload(event)">
+                <img id="video-source-preview" src="" alt="Source preview" class="hidden w-full h-32 object-cover rounded-lg">
+                <div id="video-source-empty-state" class="flex flex-col items-center">
+                  <i class="fa-solid fa-photo-film text-xl text-slate-400 group-hover:text-brand-cyan"></i>
+                  <p class="text-xs text-slate-300 font-medium mt-1">Tap to select or upload starting image</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video Prompt -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <label for="video-prompt-input" class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-clapperboard text-brand-cyan text-[10px]"></i> Motion Direction Prompt
+                </label>
+                <button type="button" onclick="randomizeVideoPrompt()" class="text-[11px] text-brand-cyan hover:underline flex items-center gap-1">
+                  <i class="fa-solid fa-dice"></i> Random Motion
+                </button>
+              </div>
+              <textarea id="video-prompt-input" rows="3"
+                class="w-full rounded-xl bg-brand-dark/80 border border-brand-border focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan p-3 text-sm text-slate-100 placeholder-slate-500 resize-none outline-none"
+                placeholder="Cinematic camera flies through rain-slicked neon skyscrapers, hyper-realistic reflections, slow motion, 60fps drone shot"></textarea>
+            </div>
+
+            <!-- Camera Motion Preset Controls -->
+            <div class="space-y-2">
+              <label class="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                <span>Camera Motion Directive</span>
+                <span id="active-motion-label" class="text-[10px] text-brand-cyan font-mono">Dolly In (Zoom)</span>
+              </label>
+              <div class="grid grid-cols-3 gap-2 text-xs">
+                <button type="button" onclick="setCameraMotion('zoom-in', 'Dolly In (Zoom)')" class="motion-btn active p-2 rounded-xl bg-brand-card border border-brand-cyan text-slate-200 flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-magnifying-glass-plus text-brand-cyan"></i> Zoom In
+                </button>
+                <button type="button" onclick="setCameraMotion('zoom-out', 'Dolly Out')" class="motion-btn p-2 rounded-xl bg-brand-card border border-brand-border text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-magnifying-glass-minus"></i> Zoom Out
+                </button>
+                <button type="button" onclick="setCameraMotion('pan-left', 'Pan Left')" class="motion-btn p-2 rounded-xl bg-brand-card border border-brand-border text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-arrow-left"></i> Pan Left
+                </button>
+                <button type="button" onclick="setCameraMotion('pan-right', 'Pan Right')" class="motion-btn p-2 rounded-xl bg-brand-card border border-brand-border text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-arrow-right"></i> Pan Right
+                </button>
+                <button type="button" onclick="setCameraMotion('orbit', '360 Orbit')" class="motion-btn p-2 rounded-xl bg-brand-card border border-brand-border text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-arrows-spin"></i> 360 Orbit
+                </button>
+                <button type="button" onclick="setCameraMotion('cinematic-drift', 'Cinematic Drift')" class="motion-btn p-2 rounded-xl bg-brand-card border border-brand-border text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-wind"></i> Drift
+                </button>
+              </div>
+            </div>
+
+            <!-- Video Length & FPS -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-300">Duration</label>
+                <select id="video-duration" class="w-full rounded-xl bg-brand-dark/80 border border-brand-border text-xs text-slate-200 p-2.5 outline-none">
+                  <option value="3">3 Seconds (Fast)</option>
+                  <option value="5" selected>5 Seconds (Standard)</option>
+                  <option value="8">8 Seconds (Extended)</option>
+                </select>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-300">Frame Rate</label>
+                <select id="video-fps" class="w-full rounded-xl bg-brand-dark/80 border border-brand-border text-xs text-slate-200 p-2.5 outline-none">
+                  <option value="24">24 FPS (Cinematic)</option>
+                  <option value="30" selected>30 FPS (Standard)</option>
+                  <option value="60">60 FPS (Ultra Smooth)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Motion Strength Slider -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs text-slate-300">
+                <span>Motion Intensity (Denoising Strength)</span>
+                <span id="motion-val-label" class="font-mono text-brand-cyan">7 / 10</span>
+              </div>
+              <input type="range" id="motion-strength" min="1" max="10" value="7" oninput="document.getElementById('motion-val-label').innerText = this.value + ' / 10'" class="w-full accent-brand-cyan cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-500">
+                <span>Subtle Movement</span>
+                <span>Hyper Dynamic</span>
+              </div>
+            </div>
+
+            <!-- Generate Video Button -->
+            <button id="btn-generate-video" onclick="generateVideo()"
+              class="w-full py-3.5 px-4 rounded-xl font-display font-bold text-sm tracking-wide bg-gradient-to-r from-brand-cyan via-teal-500 to-brand-500 hover:opacity-95 text-slate-950 shadow-glow-cyan flex items-center justify-center gap-2 transform active:scale-[0.98] transition-all">
+              <i class="fa-solid fa-film"></i>
+              <span id="btn-generate-video-text">SYNTHESIZE AI VIDEO</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Player & Preview Column (Right) -->
+        <div class="lg:col-span-7 flex flex-col gap-4">
+          <div class="glass-panel p-5 rounded-2xl border border-brand-border bg-brand-surface/90 shadow-xl flex-1 flex flex-col">
+            
+            <!-- Video Header Bar -->
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-brand-border/60">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-brand-cyan animate-pulse"></span>
+                <h3 class="text-sm font-semibold text-white">Motion Viewport</h3>
+                <span id="video-progress-badge" class="text-xs font-mono text-slate-400 hidden">Rendering: 0%</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="toggleVideoLoop()" id="btn-loop-video" class="px-2.5 py-1 text-xs rounded-lg bg-brand-card hover:bg-brand-border text-slate-300 hover:text-white border border-brand-border/80 transition-all flex items-center gap-1" title="Toggle Loop">
+                  <i class="fa-solid fa-repeat"></i> <span class="hidden sm:inline">Loop</span>
+                </button>
+                <button id="btn-download-vid" onclick="downloadCurrentVideo()" class="px-2.5 py-1 text-xs rounded-lg bg-brand-cyan/20 hover:bg-brand-cyan/40 text-brand-cyan border border-brand-cyan/40 transition-all flex items-center gap-1" title="Download MP4 / WebM">
+                  <i class="fa-solid fa-download"></i> <span class="hidden sm:inline">Export MP4</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Video Player Display Container -->
+            <div id="video-display-wrapper" class="relative flex-1 min-h-[380px] lg:min-h-[480px] rounded-xl bg-brand-dark/90 border border-brand-border/80 overflow-hidden flex items-center justify-center group">
+              
+              <!-- Video Placeholder -->
+              <div id="video-placeholder" class="text-center p-8 space-y-3 max-w-sm">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center text-brand-cyan text-2xl shadow-glow-cyan">
+                  <i class="fa-solid fa-clapperboard"></i>
+                </div>
+                <h4 class="font-display font-semibold text-slate-200">Video Canvas Standby</h4>
+                <p class="text-xs text-slate-400">Transform ideas into cinematic clips with high frame rate and seamless camera trajectories.</p>
+                <div class="pt-2">
+                  <button onclick="quickVideoPrompt('Hyper-lapse flight through glowing cyberpunk skyscrapers, neon rain, anamorphic lens')" class="text-[11px] px-3 py-1.5 rounded-full bg-brand-card hover:bg-brand-border text-cyan-300 border border-cyan-500/30 transition-colors">
+                    🎬 Try: Neon Cyberpunk Flight
+                  </button>
+                </div>
+              </div>
+
+              <!-- Video Generating / Rendering Overlay -->
+              <div id="video-loading-overlay" class="hidden absolute inset-0 bg-brand-dark/95 backdrop-blur-md flex flex-col items-center justify-center z-20 space-y-4 px-6">
+                <div class="relative w-24 h-24">
+                  <div class="w-24 h-24 rounded-full border-4 border-slate-800 border-t-brand-cyan border-r-brand-500 animate-spin"></div>
+                  <div class="absolute inset-0 flex items-center justify-center">
+                    <span id="video-percent-text" class="text-xs font-mono font-bold text-white">0%</span>
+                  </div>
+                </div>
+                <div class="text-center space-y-2 max-w-xs">
+                  <p id="video-status-text" class="font-display font-bold text-sm text-slate-100">Generating Keyframe Sequences...</p>
+                  <div class="w-48 h-1.5 bg-slate-800 rounded-full mx-auto overflow-hidden">
+                    <div id="video-progress-bar" class="h-full bg-gradient-to-r from-brand-cyan to-brand-500 transition-all duration-300" style="width: 5%;"></div>
+                  </div>
+                  <p class="text-[11px] text-slate-400 font-mono">Synthesizing frames & camera paths</p>
+                </div>
+              </div>
+
+              <!-- HTML5 Video Player -->
+              <video id="current-video-player" playsinline loop controls class="hidden max-h-full max-w-full rounded-lg shadow-2xl object-contain"></video>
+
+              <!-- Hidden Processing Canvas for Real-Time Frame Interpolation and Video Encoding -->
+              <canvas id="motion-render-canvas" class="hidden"></canvas>
+            </div>
+
+            <!-- Video Metadata Bar -->
+            <div id="video-metadata-bar" class="hidden mt-3 pt-3 border-t border-brand-border/60 text-xs text-slate-400 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded bg-brand-card text-brand-cyan font-mono" id="video-meta-time">5s @ 30fps</span>
+                <span class="px-2 py-0.5 rounded bg-brand-card text-brand-500 font-mono" id="video-meta-motion">Dolly In</span>
+              </div>
+              <p id="video-meta-prompt" class="text-slate-400 truncate max-w-xs italic"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: GALLERY & CREATIONS HISTORY         -->
+    <!-- ========================================== -->
+    <section id="section-gallery" class="tab-content hidden transition-all duration-300 space-y-4">
+      <div class="glass-panel p-5 rounded-2xl border border-brand-border bg-brand-surface/90 shadow-xl space-y-4">
+        
+        <!-- Gallery Header & Filters -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-brand-border/60">
+          <div>
+            <h2 class="font-display font-bold text-lg text-white flex items-center gap-2">
+              <i class="fa-solid fa-layer-group text-pink-400"></i> Gallery & Creations Vault
+            </h2>
+            <p class="text-xs text-slate-400">All your uncensored images and video generations stored locally & synced to GitHub</p>
+          </div>
+          
+          <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+            <button onclick="filterGallery('all')" class="gallery-filter-btn active px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-500 text-white">All</button>
+            <button onclick="filterGallery('images')" class="gallery-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-card text-slate-400 hover:text-white border border-brand-border">Images</button>
+            <button onclick="filterGallery('videos')" class="gallery-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-card text-slate-400 hover:text-white border border-brand-border">Videos</button>
+            <button onclick="exportAllCreations()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-card hover:bg-brand-border text-slate-300 border border-brand-border flex items-center gap-1.5 ml-auto sm:ml-0" title="Export as JSON backup">
+              <i class="fa-solid fa-file-export"></i> Backup
+            </button>
+            <button onclick="clearGalleryConfirm()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/40" title="Clear gallery">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+        <!-- Empty Gallery State -->
+        <div id="gallery-empty-state" class="py-16 text-center space-y-3">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-brand-card border border-brand-border flex items-center justify-center text-slate-600 text-2xl">
+            <i class="fa-solid fa-folder-open"></i>
+          </div>
+          <p class="text-sm font-medium text-slate-300">No creations saved yet</p>
+          <p class="text-xs text-slate-500">Generate an image or video above to fill your vault.</p>
+          <button onclick="switchTab('imagine')" class="mt-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold">
+            Start Generating
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: PROMPTS VAULT & UNCENSORED IDEAS    -->
+    <!-- ========================================== -->
+    <section id="section-templates" class="tab-content hidden transition-all duration-300 space-y-4">
+      <div class="glass-panel p-5 rounded-2xl border border-brand-border bg-brand-surface/90 shadow-xl space-y-4">
+        <div>
+          <h2 class="font-display font-bold text-lg text-white flex items-center gap-2">
+            <i class="fa-solid fa-fire text-amber-400"></i> Uncensored Prompts Vault
+          </h2>
+          <p class="text-xs text-slate-400">Curated, unrestricted high-potency prompts designed to unlock maximum detail, realism, and cinematic power.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="prompts-vault-cards">
+          <!-- Populated by JavaScript with rich curated prompts -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar (Optimized for iPhone / iOS) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-brand-dark/95 backdrop-blur-2xl border-t border-brand-border/80 px-2 py-2 flex items-center justify-around safe-area-pb">
+    <button onclick="switchTab('imagine')" id="mobile-nav-imagine" class="mobile-tab-btn active flex flex-col items-center gap-1 text-brand-500 py-1 px-3">
+      <i class="fa-solid fa-wand-magic-sparkles text-lg"></i>
+      <span class="text-[10px] font-medium">Imagine</span>
+    </button>
+    <button onclick="switchTab('video')" id="mobile-nav-video" class="mobile-tab-btn flex flex-col items-center gap-1 text-slate-400 py-1 px-3">
+      <i class="fa-solid fa-film text-lg"></i>
+      <span class="text-[10px] font-medium">Video</span>
+    </button>
+    <button onclick="switchTab('gallery')" id="mobile-nav-gallery" class="mobile-tab-btn flex flex-col items-center gap-1 text-slate-400 py-1 px-3 relative">
+      <i class="fa-solid fa-layer-group text-lg"></i>
+      <span class="text-[10px] font-medium">Gallery</span>
+      <span id="mobile-gallery-badge" class="absolute top-0 right-1 w-2 h-2 rounded-full bg-brand-accent hidden"></span>
+    </button>
+    <button onclick="switchTab('templates')" id="mobile-nav-templates" class="mobile-tab-btn flex flex-col items-center gap-1 text-slate-400 py-1 px-3">
+      <i class="fa-solid fa-fire text-lg"></i>
+      <span class="text-[10px] font-medium">Vault</span>
+    </button>
+    <button onclick="openGitHubModal()" class="mobile-tab-btn flex flex-col items-center gap-1 text-slate-400 py-1 px-3">
+      <i class="fa-brands fa-github text-lg"></i>
+      <span class="text-[10px] font-medium">GitHub</span>
+    </button>
+  </nav>
+
+  <!-- ========================================== -->
+  <!-- MODAL: GITHUB REPO INTEGRATION             -->
+  <!-- ========================================== -->
+  <div id="github-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+        <div class="flex items-center gap-2">
+          <i class="fa-brands fa-github text-2xl text-white"></i>
+          <div>
+            <h3 class="font-display font-bold text-base text-white">GitHub Integration</h3>
+            <p class="text-xs text-slate-400">JanMuenzer/create-a-ai-video-and-imagine</p>
+          </div>
+        </div>
+        <button onclick="closeGitHubModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="p-3 rounded-xl bg-brand-card border border-brand-border/80 space-y-2">
+          <div class="flex items-center justify-between text-slate-300 font-semibold">
+            <span>Repository Status</span>
+            <span class="text-emerald-400 flex items-center gap-1">
+              <i class="fa-solid fa-circle-check"></i> Connected & Syncing
+            </span>
+          </div>
+          <p class="text-slate-400">Every change and configuration in this app is automatically committed and pushed to your connected GitHub repository.</p>
+          <div class="pt-1 flex gap-2">
+            <a href="https://github.com/JanMuenzer/create-a-ai-video-and-imagine" target="_blank" class="px-3 py-1.5 rounded-lg bg-brand-border hover:bg-slate-700 text-white font-mono flex items-center gap-1.5 transition-colors">
+              <i class="fa-brands fa-github"></i> Open Repository
+            </a>
+            <a href="https://github.com/JanMuenzer/create-a-ai-video-and-imagine/commits/main" target="_blank" class="px-3 py-1.5 rounded-lg bg-brand-border hover:bg-slate-700 text-slate-300 flex items-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-clock-rotate-left"></i> Commit Log
+            </a>
+          </div>
+        </div>
+
+        <!-- GitHub Personal Access Token (Optional Direct Push) -->
+        <div class="space-y-2">
+          <label class="font-semibold text-slate-200 flex items-center justify-between">
+            <span>GitHub Personal Access Token (PAT)</span>
+            <span class="text-[10px] text-slate-400">(Optional for Gist / Cloud Sync)</span>
+          </label>
+          <input type="password" id="github-token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full bg-brand-dark p-2.5 rounded-xl border border-brand-border text-slate-200 font-mono text-xs outline-none focus:border-brand-cyan">
+          <p class="text-[11px] text-slate-400">Allows you to back up prompts and generated assets straight into your personal GitHub Gists or repository branches.</p>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button onclick="saveGitHubSettings()" class="flex-1 py-2.5 rounded-xl bg-brand-cyan text-brand-dark font-bold text-xs hover:opacity-90">
+            Save GitHub Settings
+          </button>
+          <button onclick="syncGalleryToGist()" class="py-2.5 px-4 rounded-xl bg-brand-card hover:bg-brand-border text-slate-200 border border-brand-border text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Export to Gist
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: SETTINGS & API HUB                  -->
+  <!-- ========================================== -->
+  <div id="settings-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-brand-border">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-xl text-brand-500"></i>
+          <div>
+            <h3 class="font-display font-bold text-base text-white">App & Model Settings</h3>
+            <p class="text-xs text-slate-400">Manage API keys, safety filters & custom models</p>
+          </div>
+        </div>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Safety Filter Mode -->
+        <div class="p-3 rounded-xl bg-brand-card border border-brand-border/80 flex items-center justify-between">
+          <div>
+            <h4 class="font-semibold text-slate-200">Uncensored Creative Mode</h4>
+            <p class="text-[11px] text-slate-400">Bypasses strict safety words and allows unrestrained fantasy, action & artistic prompts.</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-3">
+            <input type="checkbox" id="settings-uncensored-toggle" checked onchange="handleUncensoredCheckboxChange(this)" class="sr-only peer">
+            <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+          </label>
+        </div>
+
+        <!-- Custom API Endpoints (Local Automatic1111 / ComfyUI / Fal / Replicate) -->
+        <div class="space-y-3">
+          <h4 class="font-semibold text-slate-200">Custom API & Endpoints (Optional)</h4>
+          
+          <div class="space-y-1">
+            <label class="text-slate-300">Fal.ai API Key (Kling / Luma Video)</label>
+            <input type="password" id="fal-key-input" placeholder="key-xxxxxxxxxxxx" class="w-full bg-brand-dark p-2 rounded-lg border border-brand-border text-slate-200 font-mono text-xs outline-none">
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-slate-300">HuggingFace Token</label>
+            <input type="password" id="hf-token-input" placeholder="hf_xxxxxxxxxxxx" class="w-full bg-brand-dark p-2 rounded-lg border border-brand-border text-slate-200 font-mono text-xs outline-none">
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-slate-300">Local ComfyUI / WebUI URL</label>
+            <input type="text" id="custom-url-input" placeholder="http://127.0.0.1:8188" class="w-full bg-brand-dark p-2 rounded-lg border border-brand-border text-slate-200 font-mono text-xs outline-none">
+          </div>
+        </div>
+
+        <button onclick="saveAppSettings()" class="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs transition-all shadow-neon">
+          Save Preferences
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: FULLSCREEN LIGHTBOX & REMIX         -->
+  <!-- ========================================== -->
+  <div id="lightbox-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-2 sm:p-6">
+    <div class="relative w-full max-w-4xl h-full max-h-[92vh] flex flex-col justify-between items-center">
+      
+      <!-- Top Actions Bar -->
+      <div class="w-full flex items-center justify-between text-white p-2">
+        <span id="lightbox-title" class="font-display text-sm font-semibold text-slate-200 truncate max-w-xs">Creation Inspector</span>
+        <div class="flex items-center gap-2">
+          <button onclick="remixFromLightbox()" class="px-3 py-1 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold flex items-center gap-1.5">
+            <i class="fa-solid fa-wand-magic"></i> Remix
+          </button>
+          <button onclick="downloadFromLightbox()" class="p-2 rounded-lg bg-brand-card hover:bg-brand-border text-white text-xs" title="Download">
+            <i class="fa-solid fa-download"></i>
+          </button>
+          <button onclick="closeLightboxModal()" class="p-2 rounded-lg bg-brand-card hover:bg-brand-border text-white text-xs" title="Close">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Media Content Area -->
+      <div class="flex-1 w-full flex items-center justify-center overflow-hidden my-2">
+        <img id="lightbox-img" src="" alt="Fullscreen view" class="hidden max-h-full max-w-full object-contain rounded-xl shadow-2xl">
+        <video id="lightbox-video" controls autoplay loop playsinline class="hidden max-h-full max-w-full rounded-xl shadow-2xl"></video>
+      </div>
+
+      <!-- Bottom Details Drawer -->
+      <div class="w-full bg-brand-surface/90 backdrop-blur-md border border-brand-border rounded-xl p-3 text-xs space-y-1 text-slate-300">
+        <p id="lightbox-prompt" class="font-medium text-slate-100 line-clamp-2"></p>
+        <div class="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 font-mono">
+          <span id="lightbox-meta-type">Image</span>
+          <span id="lightbox-meta-dims">1024x1024</span>
+          <span id="lightbox-meta-seed">Seed: 0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-20 md:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
