@@ -1,0 +1,131 @@
+/* Custom futuristic styling and mobile safe area adjustments */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+body {
+  background-color: #08090d;
+  color: #f1f5f9;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* Glassmorphism panel effect */
+.glass-panel {
+  background: rgba(17, 19, 26, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d0f17;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #232838;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3b425b;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Tab buttons state */
+.tab-btn.active {
+  background: rgba(139, 92, 246, 0.18);
+  color: #ffffff;
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.mobile-tab-btn.active {
+  color: #8b5cf6;
+}
+
+/* Active style chip & aspect button */
+.style-chip.active {
+  background: rgba(139, 92, 246, 0.25);
+  color: #c4b5fd;
+  border-color: #8b5cf6;
+}
+
+.aspect-btn.active {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.15);
+  color: #ffffff;
+}
+
+.motion-btn.active {
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.15);
+  color: #ffffff;
+}
+
+/* Glow & neon effects */
+.shadow-neon {
+  box-shadow: 0 0 20px -3px rgba(139, 92, 246, 0.45), 0 0 10px -2px rgba(236, 72, 153, 0.25);
+}
+
+.shadow-glow-cyan {
+  box-shadow: 0 0 20px -3px rgba(6, 182, 212, 0.45), 0 0 10px -2px rgba(139, 92, 246, 0.25);
+}
+
+/* iOS safe-area support */
+.safe-area-pb {
+  padding-bottom: calc(0.5rem + var(--safe-area-inset-bottom));
+}
+
+/* Media Card Hover animation */
+.media-card {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.media-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(139, 92, 246, 0.3);
+}
+
+/* Modal animation */
+.modal-backdrop {
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Keyframes for pulse */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
