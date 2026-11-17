@@ -314,15 +314,24 @@ function setImagineInputMode(mode) {
   const txtBtn = document.getElementById('imagine-mode-txt2img');
   const imgBtn = document.getElementById('imagine-mode-img2img');
   const uploadContainer = document.getElementById('img2img-upload-container');
+  const genBtnText = document.getElementById('btn-generate-text');
 
   if (mode === 'txt2img') {
     txtBtn.className = "py-2 rounded-lg bg-brand-600 text-white shadow transition-all flex items-center justify-center gap-1.5";
     imgBtn.className = "py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5";
     uploadContainer.classList.add('hidden');
+    if (genBtnText && !APP_STATE.isGeneratingImage) {
+      genBtnText.textContent = "GENERATE UNRESTRICTED IMAGE";
+    }
   } else {
     imgBtn.className = "py-2 rounded-lg bg-brand-600 text-white shadow transition-all flex items-center justify-center gap-1.5";
     txtBtn.className = "py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5";
     uploadContainer.classList.remove('hidden');
+    if (genBtnText && !APP_STATE.isGeneratingImage) {
+      genBtnText.textContent = "SYNTHESIZE CONDITIONED IMAGE";
+    }
+    // Sync current conditioning UI state
+    syncConditioningUI();
   }
 }
 
@@ -415,7 +424,560 @@ function enhanceCurrentPrompt() {
   showToast("Prompt expanded with cinematic realism tags!", "success");
 }
 
-// Reference Image upload for Remix
+// ==========================================
+// 5.1 REFERENCE CONDITIONING & CONTROL MATRIX
+// ==========================================
+const CONDITIONING_PRESETS = {
+  full: {
+    refWeight: 85,
+    identity: 95,
+    pose: 90,
+    comp: 90,
+    style: 75,
+    lockId: true,
+    lockPose: true,
+    lockComp: true,
+    lockStyle: false,
+    label: "Full Fidelity Lock",
+    explanation: "Locks person identity, facial angle, gaze, body pose, and camera composition while applying prompt modifications."
+  },
+  identity: {
+    refWeight: 80,
+    identity: 95,
+    pose: 40,
+    comp: 40,
+    style: 50,
+    lockId: true,
+    lockPose: false,
+    lockComp: false,
+    lockStyle: false,
+    label: "Identity & Likeness Priority",
+    explanation: "Strict face, facial features, bone structure and likeness lock. Lets prompt freely change pose, clothing, and scene."
+  },
+  pose: {
+    refWeight: 80,
+    identity: 45,
+    pose: 95,
+    comp: 85,
+    style: 50,
+    lockId: false,
+    lockPose: true,
+    lockComp: true,
+    lockStyle: false,
+    label: "Pose & Orientation Transfer",
+    explanation: "Transfers exact body stance, head tilt, gaze vector, and orientation to a new character or style."
+  },
+  composition: {
+    refWeight: 80,
+    identity: 50,
+    pose: 70,
+    comp: 95,
+    style: 50,
+    lockId: false,
+    lockPose: false,
+    lockComp: true,
+    lockStyle: false,
+    label: "Camera & Composition Lock",
+    explanation: "Locks camera elevation, lens focal length, shot framing (close-up/medium/wide), and screen composition."
+  },
+  style: {
+    refWeight: 75,
+    identity: 25,
+    pose: 25,
+    comp: 40,
+    style: 95,
+    lockId: false,
+    lockPose: false,
+    lockComp: false,
+    lockStyle: true,
+    label: "Style & Lighting Transfer",
+    explanation: "Transfers color palette, key/rim lighting direction, contrast, and artistic rendering mood."
+  },
+  custom: {
+    label: "Custom Precision Matrix",
+    explanation: "Independent custom weight sliders for identity, pose, camera framing, and style."
+  }
+};
+
+function setConditioningPreset(mode) {
+  triggerHaptic();
+  APP_STATE.conditioning.mode = mode;
+  const preset = CONDITIONING_PRESETS[mode];
+  if (!preset) return;
+
+  if (mode !== 'custom') {
+    APP_STATE.conditioning.referenceWeight = preset.refWeight;
+    APP_STATE.conditioning.identityWeight = preset.identity;
+    APP_STATE.conditioning.poseWeight = preset.pose;
+    APP_STATE.conditioning.compositionWeight = preset.comp;
+    APP_STATE.conditioning.styleWeight = preset.style;
+    APP_STATE.conditioning.identityLocked = preset.lockId;
+    APP_STATE.conditioning.poseLocked = preset.lockPose;
+    APP_STATE.conditioning.compositionLocked = preset.lockComp;
+    APP_STATE.conditioning.styleLocked = preset.lockStyle;
+  }
+
+  // Update UI preset buttons
+  document.querySelectorAll('.cond-preset-btn').forEach(btn => {
+    btn.classList.remove('active', 'bg-brand-600/30', 'text-brand-200', 'border-brand-500');
+    btn.classList.add('bg-brand-dark', 'text-slate-400', 'border-brand-border');
+  });
+  const activeBtn = document.getElementById(`preset-cond-${mode}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active', 'bg-brand-600/30', 'text-brand-200', 'border-brand-500');
+    activeBtn.classList.remove('bg-brand-dark', 'text-slate-400', 'border-brand-border');
+  }
+
+  // Update status labels
+  const statusEl = document.getElementById('cond-mode-status');
+  if (statusEl) statusEl.textContent = preset.label;
+  const expEl = document.getElementById('cond-mode-explanation');
+  if (expEl) expEl.textContent = preset.explanation;
+
+  syncConditioningUI();
+}
+
+function syncConditioningUI() {
+  const cond = APP_STATE.conditioning;
+
+  // Master reference weight
+  const sliderRef = document.getElementById('slider-ref-weight');
+  if (sliderRef) sliderRef.value = cond.referenceWeight;
+  const refBadge = document.getElementById('ref-weight-badge');
+  if (refBadge) {
+    let tag = "Creative Bias";
+    if (cond.referenceWeight >= 90) tag = "Strict Clamp";
+    else if (cond.referenceWeight >= 75) tag = "Targeted Guidance";
+    else if (cond.referenceWeight >= 50) tag = "Balanced Blend";
+    refBadge.textContent = `${cond.referenceWeight}% ${tag}`;
+  }
+
+  // Identity channel
+  const sliderId = document.getElementById('slider-identity-weight');
+  if (sliderId) sliderId.value = cond.identityWeight;
+  const valId = document.getElementById('val-identity-weight');
+  if (valId) valId.textContent = `${cond.identityWeight}%`;
+  const lockId = document.getElementById('lock-identity');
+  if (lockId) lockId.checked = cond.identityLocked;
+
+  // Pose channel
+  const sliderPose = document.getElementById('slider-pose-weight');
+  if (sliderPose) sliderPose.value = cond.poseWeight;
+  const valPose = document.getElementById('val-pose-weight');
+  if (valPose) valPose.textContent = `${cond.poseWeight}%`;
+  const lockPose = document.getElementById('lock-pose');
+  if (lockPose) lockPose.checked = cond.poseLocked;
+
+  // Composition channel
+  const sliderComp = document.getElementById('slider-comp-weight');
+  if (sliderComp) sliderComp.value = cond.compositionWeight;
+  const valComp = document.getElementById('val-comp-weight');
+  if (valComp) valComp.textContent = `${cond.compositionWeight}%`;
+  const lockComp = document.getElementById('lock-composition');
+  if (lockComp) lockComp.checked = cond.compositionLocked;
+
+  // Style channel
+  const sliderStyle = document.getElementById('slider-style-weight');
+  if (sliderStyle) sliderStyle.value = cond.styleWeight;
+  const valStyle = document.getElementById('val-style-weight');
+  if (valStyle) valStyle.textContent = `${cond.styleWeight}%`;
+  const lockStyle = document.getElementById('lock-style');
+  if (lockStyle) lockStyle.checked = cond.styleLocked;
+}
+
+function handleRefWeightChange(val) {
+  const num = parseInt(val, 10);
+  APP_STATE.conditioning.referenceWeight = num;
+  const badge = document.getElementById('ref-weight-badge');
+  if (badge) {
+    let tag = "Creative Bias";
+    if (num >= 90) tag = "Strict Clamp";
+    else if (num >= 75) tag = "Targeted Guidance";
+    else if (num >= 50) tag = "Balanced Blend";
+    badge.textContent = `${num}% ${tag}`;
+  }
+}
+
+function handleChannelWeightChange(channel, val) {
+  const num = parseInt(val, 10);
+  if (channel === 'identity') {
+    APP_STATE.conditioning.identityWeight = num;
+    const el = document.getElementById('val-identity-weight');
+    if (el) el.textContent = `${num}%`;
+  } else if (channel === 'pose') {
+    APP_STATE.conditioning.poseWeight = num;
+    const el = document.getElementById('val-pose-weight');
+    if (el) el.textContent = `${num}%`;
+  } else if (channel === 'composition') {
+    APP_STATE.conditioning.compositionWeight = num;
+    const el = document.getElementById('val-comp-weight');
+    if (el) el.textContent = `${num}%`;
+  } else if (channel === 'style') {
+    APP_STATE.conditioning.styleWeight = num;
+    const el = document.getElementById('val-style-weight');
+    if (el) el.textContent = `${num}%`;
+  }
+
+  // Switch to custom preset mode UI
+  if (APP_STATE.conditioning.mode !== 'custom') {
+    APP_STATE.conditioning.mode = 'custom';
+    document.querySelectorAll('.cond-preset-btn').forEach(btn => {
+      btn.classList.remove('active', 'bg-brand-600/30', 'text-brand-200', 'border-brand-500');
+      btn.classList.add('bg-brand-dark', 'text-slate-400', 'border-brand-border');
+    });
+    const customBtn = document.getElementById('preset-cond-custom');
+    if (customBtn) {
+      customBtn.classList.add('active', 'bg-brand-600/30', 'text-brand-200', 'border-brand-500');
+      customBtn.classList.remove('bg-brand-dark', 'text-slate-400', 'border-brand-border');
+    }
+    const statusEl = document.getElementById('cond-mode-status');
+    if (statusEl) statusEl.textContent = "Custom Matrix";
+    const expEl = document.getElementById('cond-mode-explanation');
+    if (expEl) expEl.textContent = "Independent custom weight sliders for identity, pose, camera framing, and style.";
+  }
+}
+
+function toggleChannelLock(channel) {
+  triggerHaptic();
+  if (channel === 'identity') {
+    APP_STATE.conditioning.identityLocked = document.getElementById('lock-identity').checked;
+  } else if (channel === 'pose') {
+    APP_STATE.conditioning.poseLocked = document.getElementById('lock-pose').checked;
+  } else if (channel === 'composition') {
+    APP_STATE.conditioning.compositionLocked = document.getElementById('lock-composition').checked;
+  } else if (channel === 'style') {
+    APP_STATE.conditioning.styleLocked = document.getElementById('lock-style').checked;
+  }
+}
+
+function setRefSourceMode(mode) {
+  triggerHaptic();
+  const fileTab = document.getElementById('ref-source-tab-file');
+  const urlTab = document.getElementById('ref-source-tab-url');
+  const fileContainer = document.getElementById('ref-file-container');
+  const urlContainer = document.getElementById('ref-url-container');
+
+  if (mode === 'file') {
+    if (fileTab) fileTab.className = "px-2.5 py-1 rounded-md bg-brand-card text-brand-300 font-semibold border border-brand-500/50 flex items-center gap-1 transition-all";
+    if (urlTab) urlTab.className = "px-2.5 py-1 rounded-md bg-brand-dark text-slate-400 hover:text-white border border-brand-border flex items-center gap-1 transition-all";
+    if (fileContainer) fileContainer.classList.remove('hidden');
+    if (urlContainer) urlContainer.classList.add('hidden');
+  } else {
+    if (urlTab) urlTab.className = "px-2.5 py-1 rounded-md bg-brand-card text-brand-300 font-semibold border border-brand-500/50 flex items-center gap-1 transition-all";
+    if (fileTab) fileTab.className = "px-2.5 py-1 rounded-md bg-brand-dark text-slate-400 hover:text-white border border-brand-border flex items-center gap-1 transition-all";
+    if (urlContainer) urlContainer.classList.remove('hidden');
+    if (fileContainer) fileContainer.classList.add('hidden');
+  }
+}
+
+function loadReferenceFromUrlInput() {
+  const input = document.getElementById('ref-url-input');
+  const url = input ? input.value.trim() : '';
+  if (!url) {
+    showToast("Please enter a valid image URL", "warning");
+    return;
+  }
+
+  triggerHaptic();
+  APP_STATE.referenceImageBase64 = url;
+  APP_STATE.conditioning.referenceUrl = url;
+  APP_STATE.conditioning.uploadedPublicUrl = url;
+
+  const previewImg = document.getElementById('img2img-preview-img');
+  if (previewImg) previewImg.src = url;
+  const previewBox = document.getElementById('img2img-preview-box');
+  if (previewBox) previewBox.classList.remove('hidden');
+  const uploadPrompt = document.getElementById('img2img-upload-prompt');
+  if (uploadPrompt) uploadPrompt.classList.add('hidden');
+
+  analyzeReferenceImage(url);
+  showToast("Web reference loaded into Conditioning Studio!", "success");
+}
+
+function useCanvasAsReference() {
+  triggerHaptic();
+  if (!APP_STATE.currentImage || !APP_STATE.currentImage.url) {
+    showToast("No generated canvas image available to use as reference", "warning");
+    return;
+  }
+
+  setImagineInputMode('img2img');
+  APP_STATE.referenceImageBase64 = APP_STATE.currentImage.url;
+  APP_STATE.conditioning.referenceUrl = APP_STATE.currentImage.url;
+
+  const previewImg = document.getElementById('img2img-preview-img');
+  if (previewImg) previewImg.src = APP_STATE.currentImage.url;
+  const previewBox = document.getElementById('img2img-preview-box');
+  if (previewBox) previewBox.classList.remove('hidden');
+  const uploadPrompt = document.getElementById('img2img-upload-prompt');
+  if (uploadPrompt) uploadPrompt.classList.add('hidden');
+
+  analyzeReferenceImage(APP_STATE.currentImage.url);
+  showToast("Canvas image loaded as Reference Guide!", "success");
+}
+
+function syncAspectToMatchReference() {
+  triggerHaptic();
+  const attrs = APP_STATE.conditioning.referenceAttributes;
+  if (!attrs || !attrs.aspectRatio) {
+    showToast("Load a reference image first to detect aspect ratio", "info");
+    return;
+  }
+
+  setAspectRatio(attrs.aspectRatio, attrs.aspectWidth, attrs.aspectHeight);
+  showToast(`Canvas aspect ratio synced to Reference: ${attrs.aspectRatio} (${attrs.aspectWidth}×${attrs.aspectHeight})`, "success");
+}
+
+function getDominantPalette(samples) {
+  if (!samples || samples.length === 0) return ['#0f172a', '#3b82f6', '#ec4899', '#f8fafc'];
+  // Sort by brightness
+  samples.sort((a, b) => (0.299 * a[0] + 0.587 * a[1] + 0.114 * a[2]) - (0.299 * b[0] + 0.587 * b[1] + 0.114 * b[2]));
+  const step = Math.floor(samples.length / 4);
+  const picked = [
+    samples[Math.min(5, samples.length - 1)],
+    samples[Math.min(step, samples.length - 1)],
+    samples[Math.min(step * 2, samples.length - 1)],
+    samples[Math.min(samples.length - 5, samples.length - 1)]
+  ];
+
+  return picked.map(c => {
+    const toHex = n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+    return `#${toHex(c[0])}${toHex(c[1])}${toHex(c[2])}`;
+  });
+}
+
+async function uploadReferenceImageBackground(imageSrc) {
+  if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
+    APP_STATE.conditioning.uploadedPublicUrl = imageSrc;
+    return;
+  }
+
+  try {
+    const res = await fetch(imageSrc);
+    const blob = await res.blob();
+    const formData = new FormData();
+    formData.append('file', blob, 'nexus-reference.jpg');
+
+    const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (uploadRes.ok) {
+      const data = await uploadRes.json();
+      if (data && data.data && data.data.url) {
+        const directUrl = data.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+        APP_STATE.conditioning.uploadedPublicUrl = directUrl;
+      }
+    }
+  } catch (err) {
+    // Non-blocking fallback to latent prompt conditioning directives
+  }
+}
+
+function analyzeReferenceImage(imageSrc) {
+  if (!imageSrc) return;
+
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    try {
+      const nw = img.naturalWidth || 512;
+      const nh = img.naturalHeight || 512;
+      const ratio = nw / nh;
+
+      let bestRatio = '1:1';
+      let rWidth = 1024, rHeight = 1024;
+      if (ratio < 0.7) {
+        bestRatio = '9:16';
+        rWidth = 768; rHeight = 1344;
+      } else if (ratio > 1.8) {
+        bestRatio = '21:9';
+        rWidth = 1408; rHeight = 600;
+      } else if (ratio > 1.4) {
+        bestRatio = '16:9';
+        rWidth = 1344; rHeight = 768;
+      } else if (ratio > 1.15) {
+        bestRatio = '4:3';
+        rWidth = 1024; rHeight = 768;
+      }
+
+      APP_STATE.conditioning.referenceAttributes.aspectRatio = bestRatio;
+      APP_STATE.conditioning.referenceAttributes.aspectWidth = rWidth;
+      APP_STATE.conditioning.referenceAttributes.aspectHeight = rHeight;
+
+      // Offscreen canvas analysis
+      const canvas = document.createElement('canvas');
+      canvas.width = 120;
+      canvas.height = 120;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, 120, 120);
+
+      const imgData = ctx.getImageData(0, 0, 120, 120).data;
+      let totalLuma = 0;
+      let leftLuma = 0;
+      let rightLuma = 0;
+      let skinPixels = 0;
+      let skinMinY = 120, skinMaxY = 0;
+      let skinMinX = 120, skinMaxX = 0;
+      let skinXSum = 0;
+      const colorSamples = [];
+
+      for (let y = 0; y < 120; y++) {
+        for (let x = 0; x < 120; x++) {
+          const idx = (y * 120 + x) * 4;
+          const r = imgData[idx];
+          const g = imgData[idx + 1];
+          const b = imgData[idx + 2];
+          const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+          totalLuma += luma;
+
+          if (x < 60) leftLuma += luma;
+          else rightLuma += luma;
+
+          // Warm/skin centroid detection
+          if (r > 60 && g > 40 && b > 25 && r > b && (r - g) > 8) {
+            skinPixels++;
+            if (y < skinMinY) skinMinY = y;
+            if (y > skinMaxY) skinMaxY = y;
+            if (x < skinMinX) skinMinX = x;
+            if (x > skinMaxX) skinMaxX = x;
+            skinXSum += x;
+          }
+
+          if ((x % 12 === 0) && (y % 12 === 0)) {
+            colorSamples.push([r, g, b]);
+          }
+        }
+      }
+
+      const avgLuma = totalLuma / 14400;
+      const avgLeft = leftLuma / 7200;
+      const avgRight = rightLuma / 7200;
+
+      // Framing estimation
+      let framingTag = "Medium Portrait (85mm)";
+      const faceHeight = skinMaxY > skinMinY ? (skinMaxY - skinMinY) : 50;
+      if (faceHeight > 75) {
+        framingTag = "Close-up Portrait (85mm)";
+      } else if (faceHeight < 35) {
+        framingTag = "Environmental Shot (35mm)";
+      } else {
+        framingTag = "Medium Portrait (50mm)";
+      }
+
+      // Facial Orientation & Gaze estimation
+      let angleTag = "Frontal Direct Gaze";
+      if (skinPixels > 200) {
+        const avgFaceX = skinXSum / skinPixels;
+        if (avgFaceX < 50) angleTag = "3/4 Profile Turned Right";
+        else if (avgFaceX > 70) angleTag = "3/4 Profile Turned Left";
+        else angleTag = "Frontal Direct Gaze";
+      }
+
+      // Lighting estimation
+      let lightingTag = "Balanced Studio Lighting";
+      const lumaDiff = Math.abs(avgLeft - avgRight);
+      if (lumaDiff > 25) {
+        lightingTag = avgLeft > avgRight ? "Dramatic Key-Left Lighting" : "Dramatic Key-Right Lighting";
+      } else if (avgLuma > 165) {
+        lightingTag = "High-Key Soft Diffused";
+      } else if (avgLuma < 85) {
+        lightingTag = "Moody Chiaroscuro Low-Key";
+      } else {
+        lightingTag = "Cinematic Ambient Lighting";
+      }
+
+      const palette = getDominantPalette(colorSamples);
+
+      APP_STATE.conditioning.referenceAttributes = {
+        framing: framingTag,
+        faceAngle: angleTag,
+        lighting: lightingTag,
+        palette: palette,
+        aspectRatio: bestRatio,
+        aspectWidth: rWidth,
+        aspectHeight: rHeight
+      };
+
+      const attrBox = document.getElementById('ref-attributes-box');
+      if (attrBox) attrBox.classList.remove('hidden');
+
+      const framingEl = document.getElementById('attr-framing-text');
+      if (framingEl) framingEl.textContent = framingTag;
+
+      const angleEl = document.getElementById('attr-angle-text');
+      if (angleEl) angleEl.textContent = angleTag;
+
+      const lightEl = document.getElementById('attr-lighting-text');
+      if (lightEl) lightEl.textContent = lightingTag;
+
+      const paletteContainer = document.getElementById('attr-palette-swatches');
+      if (paletteContainer) {
+        paletteContainer.innerHTML = palette.map(c => `
+          <span class="w-3 h-3 rounded-full border border-white/20 shadow-sm" style="background-color: ${c}" title="${c}"></span>
+        `).join('');
+      }
+
+      const syncBtn = document.getElementById('btn-sync-aspect');
+      if (syncBtn) {
+        syncBtn.classList.remove('hidden');
+        syncBtn.title = `Match canvas aspect ratio to reference (${bestRatio})`;
+      }
+
+      uploadReferenceImageBackground(imageSrc);
+
+    } catch (err) {
+      console.warn("Reference visual analysis warning:", err);
+    }
+  };
+
+  img.src = imageSrc;
+}
+
+function buildConditioningDirectives() {
+  const cond = APP_STATE.conditioning;
+  const attrs = cond.referenceAttributes || {};
+  const directives = [];
+
+  // 1. Identity & Facial Likeness Preservation
+  if (cond.identityWeight >= 30) {
+    const weightLabel = cond.identityWeight >= 85 ? "strict identity preservation" : "strong facial likeness";
+    directives.push(
+      `[Identity Conditioning (${cond.identityWeight}%): ${weightLabel}, identical person as reference image, identical facial bone structure, defined jawline, identical eye shape and iris color, matching nose bridge and cheekbones, identical facial symmetry, matching skin tone and complexion, matching hair texture and hairline]`
+    );
+  }
+
+  // 2. Pose & Facial Orientation Fidelity
+  if (cond.poseWeight >= 30) {
+    const angleText = attrs.faceAngle || "matching head tilt and 3/4 turn";
+    const weightLabel = cond.poseWeight >= 85 ? "exact pose lock" : "matching posture";
+    directives.push(
+      `[Pose Conditioning (${cond.poseWeight}%): ${weightLabel}, ${angleText}, identical head pitch and yaw angle, matching eye gaze direction, identical neck and shoulder alignment, matching torso rotation and body posture]`
+    );
+  }
+
+  // 3. Camera Angle & Composition Fidelity
+  if (cond.compositionWeight >= 30) {
+    const framingText = attrs.framing || "close-up portrait framing";
+    const weightLabel = cond.compositionWeight >= 85 ? "exact camera angle and composition lock" : "matching camera viewpoint";
+    directives.push(
+      `[Composition Conditioning (${cond.compositionWeight}%): ${weightLabel}, ${framingText}, identical camera perspective, matching camera elevation, matching 85mm lens focal length, subject anchored in same screen-space framing, rule-of-thirds composition]`
+    );
+  }
+
+  // 4. Style, Lighting & Atmosphere Transfer
+  if (cond.styleWeight >= 30) {
+    const lightText = attrs.lighting || "dramatic directional lighting";
+    directives.push(
+      `[Style & Lighting Conditioning (${cond.styleWeight}%): ${lightText}, matching key light and rim light direction, matching color temperature, matching chiaroscuro shadow contrast and cinematic depth]`
+    );
+  }
+
+  return directives;
+}
+
+// Reference Image upload handler
 function handleImageUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -423,23 +985,42 @@ function handleImageUpload(e) {
   const reader = new FileReader();
   reader.onload = (event) => {
     APP_STATE.referenceImageBase64 = event.target.result;
-    document.getElementById('img2img-preview-img').src = event.target.result;
-    document.getElementById('img2img-preview-box').classList.remove('hidden');
-    document.getElementById('img2img-upload-prompt').classList.add('hidden');
-    showToast("Reference image loaded for remix", "success");
+    APP_STATE.conditioning.referenceUrl = '';
+    const previewImg = document.getElementById('img2img-preview-img');
+    if (previewImg) previewImg.src = event.target.result;
+    const previewBox = document.getElementById('img2img-preview-box');
+    if (previewBox) previewBox.classList.remove('hidden');
+    const uploadPrompt = document.getElementById('img2img-upload-prompt');
+    if (uploadPrompt) uploadPrompt.classList.add('hidden');
+
+    analyzeReferenceImage(event.target.result);
+    showToast("Reference image loaded for targeted conditioning!", "success");
   };
   reader.readAsDataURL(file);
 }
 
 function clearImageUpload(e) {
-  e.stopPropagation();
+  if (e) e.stopPropagation();
+  triggerHaptic();
   APP_STATE.referenceImageBase64 = null;
-  document.getElementById('img2img-file-input').value = '';
-  document.getElementById('img2img-preview-box').classList.add('hidden');
-  document.getElementById('img2img-upload-prompt').classList.remove('hidden');
+  APP_STATE.conditioning.referenceUrl = '';
+  APP_STATE.conditioning.uploadedPublicUrl = '';
+  const fileInput = document.getElementById('img2img-file-input');
+  if (fileInput) fileInput.value = '';
+  const urlInput = document.getElementById('ref-url-input');
+  if (urlInput) urlInput.value = '';
+  const previewBox = document.getElementById('img2img-preview-box');
+  if (previewBox) previewBox.classList.add('hidden');
+  const uploadPrompt = document.getElementById('img2img-upload-prompt');
+  if (uploadPrompt) uploadPrompt.classList.remove('hidden');
+  const attrBox = document.getElementById('ref-attributes-box');
+  if (attrBox) attrBox.classList.add('hidden');
+  const syncBtn = document.getElementById('btn-sync-aspect');
+  if (syncBtn) syncBtn.classList.add('hidden');
+  showToast("Reference image removed", "info");
 }
 
-// Generate Image Core Function
+// Generate Image Core Function with Precision Reference Conditioning
 async function generateImage() {
   if (APP_STATE.isGeneratingImage) return;
 
@@ -495,6 +1076,24 @@ async function generateImage() {
       fullPrompt = `${fullPrompt}, ${APP_STATE.selectedStyle}`;
     }
 
+    // Reference Image Conditioning Integration
+    const isConditioningActive = APP_STATE.imagineMode === 'img2img' && (APP_STATE.referenceImageBase64 || APP_STATE.conditioning.referenceUrl);
+
+    if (isConditioningActive) {
+      const directives = buildConditioningDirectives();
+      const refWeight = APP_STATE.conditioning.referenceWeight || 85;
+
+      if (directives.length > 0) {
+        if (refWeight >= 70) {
+          // Lead with targeted conditioning directives for strict latent adherence
+          fullPrompt = `${directives.join('. ')}. Creative context and theme: ${fullPrompt}`;
+        } else {
+          // Blend with creative prompt dominant
+          fullPrompt = `${fullPrompt}, visually conditioned by reference: ${directives.join('. ')}`;
+        }
+      }
+    }
+
     // Auto-enhance if toggled
     const autoEnhance = document.getElementById('auto-enhance-toggle').checked;
     if (autoEnhance && !fullPrompt.includes('8k') && !fullPrompt.includes('realistic')) {
@@ -514,7 +1113,13 @@ async function generateImage() {
     else if (modelSelect === 'turbo') queryModel = 'turbo';
 
     const encodedPrompt = encodeURIComponent(fullPrompt);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seedVal}&nologo=true&model=${queryModel}`;
+    let imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seedVal}&nologo=true&model=${queryModel}`;
+
+    // Pass public image reference URL if active
+    const activeRefUrl = APP_STATE.conditioning.uploadedPublicUrl || APP_STATE.conditioning.referenceUrl;
+    if (isConditioningActive && activeRefUrl) {
+      imageUrl += `&image=${encodeURIComponent(activeRefUrl)}`;
+    }
 
     // Preload image in memory to ensure smooth reveal
     await new Promise((resolve, reject) => {
@@ -525,8 +1130,9 @@ async function generateImage() {
         resolve(img);
       };
       img.onerror = () => {
-        // Fallback to standard url if model failed
-        imgElement.src = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seedVal}&nologo=true`;
+        // Fallback to standard url if model query parameter failed
+        const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seedVal}&nologo=true`;
+        imgElement.src = fallbackUrl;
         resolve(imgElement);
       };
       img.src = imageUrl;
@@ -535,6 +1141,7 @@ async function generateImage() {
     clearInterval(timerInterval);
 
     // Save state
+    const refSource = APP_STATE.referenceImageBase64 || APP_STATE.conditioning.referenceUrl || null;
     APP_STATE.currentImage = {
       id: 'img-' + Date.now(),
       type: 'image',
@@ -545,7 +1152,17 @@ async function generateImage() {
       resolution: `${width}x${height}`,
       seed: seedVal,
       uncensored: APP_STATE.uncensoredMode,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      referenceImage: isConditioningActive ? refSource : null,
+      conditioning: isConditioningActive ? {
+        mode: APP_STATE.conditioning.mode,
+        referenceWeight: APP_STATE.conditioning.referenceWeight,
+        identityWeight: APP_STATE.conditioning.identityWeight,
+        poseWeight: APP_STATE.conditioning.poseWeight,
+        compositionWeight: APP_STATE.conditioning.compositionWeight,
+        styleWeight: APP_STATE.conditioning.styleWeight,
+        attributes: { ...APP_STATE.conditioning.referenceAttributes }
+      } : null
     };
 
     // Add to gallery
@@ -557,24 +1174,137 @@ async function generateImage() {
     document.getElementById('meta-seed').textContent = `Seed: ${seedVal}`;
     document.getElementById('meta-prompt-snippet').textContent = prompt;
 
+    // Show/hide Compare with Ref button & badge
+    const compareBtn = document.getElementById('btn-compare-ref');
+    const condBadge = document.getElementById('meta-conditioning-badge');
+    const condBadgeText = document.getElementById('meta-conditioning-text');
+
+    if (isConditioningActive && refSource) {
+      if (compareBtn) compareBtn.classList.remove('hidden');
+      if (condBadge) {
+        condBadge.classList.remove('hidden');
+        if (condBadgeText) condBadgeText.textContent = `Identity ${APP_STATE.conditioning.identityWeight}% • Pose ${APP_STATE.conditioning.poseWeight}%`;
+      }
+    } else {
+      if (compareBtn) compareBtn.classList.add('hidden');
+      if (condBadge) condBadge.classList.add('hidden');
+    }
+
     // Reveal output
     imgElement.classList.remove('hidden');
     overlayControls.classList.remove('hidden');
     metadataBar.classList.remove('hidden');
-    showToast("Image synthesized successfully!", "success");
+    showToast("Image synthesized successfully with targeted conditioning!", "success");
 
   } catch (err) {
     console.error("Image generation error:", err);
     clearInterval(timerInterval);
     showToast("Generation error. Trying fallback...", "error");
-    // Fallback render
     placeholder.classList.remove('hidden');
   } finally {
     APP_STATE.isGeneratingImage = false;
     btn.disabled = false;
-    btnText.textContent = "GENERATE UNRESTRICTED IMAGE";
+    btnText.textContent = APP_STATE.imagineMode === 'img2img' ? "SYNTHESIZE CONDITIONED IMAGE" : "GENERATE UNRESTRICTED IMAGE";
     spinner.classList.add('hidden');
   }
+}
+
+// ==========================================
+// 5.2 COMPARISON MODAL & RE-TUNING
+// ==========================================
+function openComparisonModal() {
+  triggerHaptic();
+  if (!APP_STATE.currentImage || !APP_STATE.currentImage.referenceImage) {
+    showToast("No reference image associated with this creation", "warning");
+    return;
+  }
+
+  const modal = document.getElementById('comparison-modal');
+  const refImg = document.getElementById('compare-img-ref');
+  const resImg = document.getElementById('compare-img-result');
+  if (!modal || !refImg || !resImg) return;
+
+  refImg.src = APP_STATE.currentImage.referenceImage;
+  resImg.src = APP_STATE.currentImage.url;
+
+  const cond = APP_STATE.currentImage.conditioning || APP_STATE.conditioning;
+  const idVal = cond.identityWeight || 95;
+  const poseVal = cond.poseWeight || 90;
+  const compVal = cond.compositionWeight || 90;
+  const scaleVal = cond.referenceWeight || 85;
+
+  document.getElementById('compare-metric-identity').textContent = `${idVal}%`;
+  document.getElementById('compare-bar-identity').style.width = `${idVal}%`;
+
+  document.getElementById('compare-metric-pose').textContent = `${poseVal}%`;
+  document.getElementById('compare-bar-pose').style.width = `${poseVal}%`;
+
+  document.getElementById('compare-metric-composition').textContent = `${compVal}%`;
+  document.getElementById('compare-bar-composition').style.width = `${compVal}%`;
+
+  document.getElementById('compare-metric-weight').textContent = `${scaleVal}%`;
+  document.getElementById('compare-bar-weight').style.width = `${scaleVal}%`;
+
+  modal.classList.remove('hidden');
+}
+
+function closeComparisonModal() {
+  const modal = document.getElementById('comparison-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function openLightboxComparison() {
+  if (!activeLightboxItem || !activeLightboxItem.referenceImage) {
+    showToast("This creation did not use reference conditioning", "info");
+    return;
+  }
+  const modal = document.getElementById('comparison-modal');
+  const refImg = document.getElementById('compare-img-ref');
+  const resImg = document.getElementById('compare-img-result');
+  if (!modal || !refImg || !resImg) return;
+
+  refImg.src = activeLightboxItem.referenceImage;
+  resImg.src = activeLightboxItem.url;
+
+  const cond = activeLightboxItem.conditioning || APP_STATE.conditioning;
+  const idVal = cond.identityWeight || 95;
+  const poseVal = cond.poseWeight || 90;
+  const compVal = cond.compositionWeight || 90;
+  const scaleVal = cond.referenceWeight || 85;
+
+  document.getElementById('compare-metric-identity').textContent = `${idVal}%`;
+  document.getElementById('compare-bar-identity').style.width = `${idVal}%`;
+
+  document.getElementById('compare-metric-pose').textContent = `${poseVal}%`;
+  document.getElementById('compare-bar-pose').style.width = `${poseVal}%`;
+
+  document.getElementById('compare-metric-composition').textContent = `${compVal}%`;
+  document.getElementById('compare-bar-composition').style.width = `${compVal}%`;
+
+  document.getElementById('compare-metric-weight').textContent = `${scaleVal}%`;
+  document.getElementById('compare-bar-weight').style.width = `${scaleVal}%`;
+
+  modal.classList.remove('hidden');
+}
+
+function boostConditioningAndRegenerate(channel) {
+  triggerHaptic();
+  closeComparisonModal();
+  switchTab('imagine');
+  setImagineInputMode('img2img');
+
+  if (channel === 'identity') {
+    const current = APP_STATE.conditioning.identityWeight;
+    handleChannelWeightChange('identity', Math.min(100, current + 10));
+    showToast("Boosted Identity Likeness to " + APP_STATE.conditioning.identityWeight + "%", "success");
+  } else if (channel === 'pose') {
+    const current = APP_STATE.conditioning.poseWeight;
+    handleChannelWeightChange('pose', Math.min(100, current + 10));
+    showToast("Tightened Pose Alignment to " + APP_STATE.conditioning.poseWeight + "%", "success");
+  }
+
+  generateImage();
+}
 }
 
 function copyCurrentPrompt() {
@@ -1005,6 +1735,11 @@ function renderGalleryGrid(filter = 'all') {
           <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-brand-500/90 text-white text-[9px] font-mono font-bold flex items-center gap-1 shadow">
             <i class="fa-solid fa-image"></i> IMAGE
           </div>
+          ${item.referenceImage ? `
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-brand-neon/90 text-brand-dark text-[9px] font-mono font-bold flex items-center gap-1 shadow">
+              <i class="fa-solid fa-crosshairs"></i> REF-GUIDED
+            </div>
+          ` : ''}
         `}
 
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-2.5 flex flex-col justify-end">
@@ -1086,12 +1821,29 @@ function openLightbox(index) {
   const typeEl = document.getElementById('lightbox-meta-type');
   const dimsEl = document.getElementById('lightbox-meta-dims');
   const seedEl = document.getElementById('lightbox-meta-seed');
+  const compareBtn = document.getElementById('lightbox-compare-btn');
+  const condEl = document.getElementById('lightbox-meta-conditioning');
+  const condText = document.getElementById('lightbox-meta-cond-text');
 
   title.textContent = item.type === 'video' ? "Video Inspector" : "Image Inspector";
   promptEl.textContent = item.prompt;
   typeEl.textContent = item.type.toUpperCase();
   dimsEl.textContent = item.resolution || item.duration || "HD";
   seedEl.textContent = item.seed ? `Seed: ${item.seed}` : `Motion: ${item.motion || 'Dynamic'}`;
+
+  // Reference conditioning info in lightbox
+  if (item.referenceImage) {
+    if (compareBtn) compareBtn.classList.remove('hidden');
+    if (condEl) {
+      condEl.classList.remove('hidden');
+      const idWeight = item.conditioning ? item.conditioning.identityWeight : 95;
+      const poseWeight = item.conditioning ? item.conditioning.poseWeight : 90;
+      if (condText) condText.textContent = `Identity ${idWeight}% • Pose ${poseWeight}%`;
+    }
+  } else {
+    if (compareBtn) compareBtn.classList.add('hidden');
+    if (condEl) condEl.classList.add('hidden');
+  }
 
   if (item.type === 'video') {
     img.classList.add('hidden');
@@ -1122,6 +1874,9 @@ function openLightboxManual(item) {
   const modal = document.getElementById('lightbox-modal');
   const img = document.getElementById('lightbox-img');
   const video = document.getElementById('lightbox-video');
+  const compareBtn = document.getElementById('lightbox-compare-btn');
+  const condEl = document.getElementById('lightbox-meta-conditioning');
+  const condText = document.getElementById('lightbox-meta-cond-text');
 
   video.classList.add('hidden');
   img.src = item.url;
@@ -1129,6 +1884,20 @@ function openLightboxManual(item) {
   document.getElementById('lightbox-prompt').textContent = item.prompt;
   document.getElementById('lightbox-meta-dims').textContent = item.resolution || '1024x1024';
   document.getElementById('lightbox-meta-seed').textContent = `Seed: ${item.seed || '42'}`;
+
+  if (item.referenceImage) {
+    if (compareBtn) compareBtn.classList.remove('hidden');
+    if (condEl) {
+      condEl.classList.remove('hidden');
+      const idWeight = item.conditioning ? item.conditioning.identityWeight : 95;
+      const poseWeight = item.conditioning ? item.conditioning.poseWeight : 90;
+      if (condText) condText.textContent = `Identity ${idWeight}% • Pose ${poseWeight}%`;
+    }
+  } else {
+    if (compareBtn) compareBtn.classList.add('hidden');
+    if (condEl) condEl.classList.add('hidden');
+  }
+
   modal.classList.remove('hidden');
 }
 
@@ -1146,11 +1915,33 @@ function remixFromLightbox() {
 
   if (activeLightboxItem.type === 'image') {
     switchTab('imagine');
+    setImagineInputMode('img2img');
+
+    // Load as active reference image
+    APP_STATE.referenceImageBase64 = activeLightboxItem.url;
+    APP_STATE.conditioning.referenceUrl = activeLightboxItem.url;
+    APP_STATE.conditioning.uploadedPublicUrl = activeLightboxItem.url;
+
+    const previewImg = document.getElementById('img2img-preview-img');
+    if (previewImg) previewImg.src = activeLightboxItem.url;
+    const previewBox = document.getElementById('img2img-preview-box');
+    if (previewBox) previewBox.classList.remove('hidden');
+    const uploadPrompt = document.getElementById('img2img-upload-prompt');
+    if (uploadPrompt) uploadPrompt.classList.add('hidden');
+
+    analyzeReferenceImage(activeLightboxItem.url);
+
+    if (activeLightboxItem.conditioning && activeLightboxItem.conditioning.mode) {
+      setConditioningPreset(activeLightboxItem.conditioning.mode);
+    } else {
+      setConditioningPreset('full');
+    }
+
     document.getElementById('prompt-input').value = activeLightboxItem.prompt;
     if (activeLightboxItem.seed) {
       document.getElementById('seed-input').value = activeLightboxItem.seed;
     }
-    showToast("Prompt and parameters loaded for Remixing!", "success");
+    showToast("Loaded into Precision Conditioning Engine with Identity & Pose locks active!", "success");
   } else {
     switchTab('video');
     document.getElementById('video-prompt-input').value = activeLightboxItem.prompt;
