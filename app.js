@@ -450,11 +450,126 @@ function enhanceCurrentPrompt() {
 // ==========================================
 // 5.1 REFERENCE CONDITIONING & CONTROL MATRIX
 // ==========================================
+const CURATED_REFERENCE_PRESETS = {
+  'ref-elena': {
+    id: 'ref-elena',
+    name: 'Elena',
+    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1024&q=80',
+    subject: {
+      name: 'Elena',
+      gender: 'Woman (Early 20s)',
+      hair: 'Dark brunette wavy hair with middle part',
+      eyes: 'Hazel almond eyes',
+      facialFeatures: 'Sculpted jawline, defined cheekbones, full lips, natural brows',
+      complexion: 'Warm olive complexion',
+      customLikenessNotes: 'Elena, athletic elegant facial structure'
+    },
+    pose: {
+      angle: '3/4 Turn Facing Left (25°)',
+      gaze: 'Direct Eye Contact with Camera',
+      shoulders: 'Shoulders angled 3/4 to camera'
+    },
+    composition: {
+      framing: 'Tight Close-up Portrait (85mm Lens)',
+      elevation: 'Eye-Level Perspective',
+      focalLength: '85mm f/1.4'
+    },
+    style: {
+      lighting: 'Dramatic Directional Studio Lighting with chiaroscuro contrast',
+      palette: ['#1c1917', '#78350f', '#d97706', '#fef3c7']
+    }
+  },
+  'ref-marcus': {
+    id: 'ref-marcus',
+    name: 'Marcus',
+    url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1024&q=80',
+    subject: {
+      name: 'Marcus',
+      gender: 'Man (Early 30s)',
+      hair: 'Short dark textured fade haircut',
+      eyes: 'Deep warm brown eyes',
+      facialFeatures: 'Chiseled masculine jawline, strong chin, groomed stubble beard',
+      complexion: 'Healthy warm skin tone',
+      customLikenessNotes: 'Marcus, masculine defined jawline and intense gaze'
+    },
+    pose: {
+      angle: 'Frontal Direct Gaze (0°)',
+      gaze: 'Direct Eye Contact with Camera',
+      shoulders: 'Broad shoulders squared to camera'
+    },
+    composition: {
+      framing: 'Tight Close-up Portrait (85mm Lens)',
+      elevation: 'Eye-Level Perspective',
+      focalLength: '85mm'
+    },
+    style: {
+      lighting: 'Crisp Studio Key Light with gentle rim separation',
+      palette: ['#0f172a', '#334155', '#94a3b8', '#f8fafc']
+    }
+  },
+  'ref-aria': {
+    id: 'ref-aria',
+    name: 'Aria',
+    url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=1024&q=80',
+    subject: {
+      name: 'Aria',
+      gender: 'Woman (Mid 20s)',
+      hair: 'Sleek straight dark hair flowing past shoulders',
+      eyes: 'Expressive dark brown almond eyes',
+      facialFeatures: 'Soft refined jawline, gentle cheekbones, radiant natural beauty',
+      complexion: 'Radiant porcelain skin with golden undertones',
+      customLikenessNotes: 'Aria, natural serene facial features and gentle gaze'
+    },
+    pose: {
+      angle: '3/4 Turn Facing Right (25°)',
+      gaze: 'Direct Eye Contact with Camera',
+      shoulders: 'Relaxed natural shoulder posture'
+    },
+    composition: {
+      framing: 'Medium Bust Portrait (50mm Lens)',
+      elevation: 'Eye-Level Perspective',
+      focalLength: '50mm f/1.2'
+    },
+    style: {
+      lighting: 'Golden Hour Soft Sunlight with warm rim glow',
+      palette: ['#451a03', '#92400e', '#f59e0b', '#fef3c7']
+    }
+  },
+  'ref-david': {
+    id: 'ref-david',
+    name: 'David',
+    url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=1024&q=80',
+    subject: {
+      name: 'David',
+      gender: 'Man (Early 40s)',
+      hair: 'Distinguished dark hair with salt and pepper temples',
+      eyes: 'Piercing hazel eyes',
+      facialFeatures: 'Weathered handsome facial lines, square jaw, light groomed stubble',
+      complexion: 'Rugged sun-kissed skin texture',
+      customLikenessNotes: 'David, commanding cinematic presence and sculpted features'
+    },
+    pose: {
+      angle: '3/4 Turn Facing Left (25°)',
+      gaze: 'Gazing Off-Camera Left',
+      shoulders: 'Firm composed posture'
+    },
+    composition: {
+      framing: 'Tight Close-up Portrait (85mm Lens)',
+      elevation: 'Low-Angle Looking Up',
+      focalLength: '85mm anamorphic'
+    },
+    style: {
+      lighting: 'Low-Key Chiaroscuro with intense side rim lighting',
+      palette: ['#09090b', '#27272a', '#71717a', '#fafafa']
+    }
+  }
+};
+
 const CONDITIONING_PRESETS = {
   full: {
-    refWeight: 85,
+    refWeight: 88,
     identity: 95,
-    pose: 90,
+    pose: 92,
     comp: 90,
     style: 75,
     lockId: true,
@@ -462,14 +577,14 @@ const CONDITIONING_PRESETS = {
     lockComp: true,
     lockStyle: false,
     label: "Full Fidelity Lock",
-    explanation: "Locks person identity, facial angle, gaze, body pose, and camera composition while applying prompt modifications."
+    explanation: "Locks person identity, facial bone structure, gaze, head tilt, and camera framing while applying prompt modifications."
   },
   identity: {
-    refWeight: 80,
-    identity: 95,
-    pose: 40,
+    refWeight: 82,
+    identity: 98,
+    pose: 35,
     comp: 40,
-    style: 50,
+    style: 45,
     lockId: true,
     lockPose: false,
     lockComp: false,
@@ -478,11 +593,11 @@ const CONDITIONING_PRESETS = {
     explanation: "Strict face, facial features, bone structure and likeness lock. Lets prompt freely change pose, clothing, and scene."
   },
   pose: {
-    refWeight: 80,
-    identity: 45,
-    pose: 95,
+    refWeight: 85,
+    identity: 35,
+    pose: 98,
     comp: 85,
-    style: 50,
+    style: 45,
     lockId: false,
     lockPose: true,
     lockComp: true,
@@ -492,10 +607,10 @@ const CONDITIONING_PRESETS = {
   },
   composition: {
     refWeight: 80,
-    identity: 50,
-    pose: 70,
-    comp: 95,
-    style: 50,
+    identity: 45,
+    pose: 65,
+    comp: 98,
+    style: 45,
     lockId: false,
     lockPose: false,
     lockComp: true,
@@ -505,10 +620,10 @@ const CONDITIONING_PRESETS = {
   },
   style: {
     refWeight: 75,
-    identity: 25,
-    pose: 25,
+    identity: 20,
+    pose: 20,
     comp: 40,
-    style: 95,
+    style: 98,
     lockId: false,
     lockPose: false,
     lockComp: false,
@@ -521,6 +636,112 @@ const CONDITIONING_PRESETS = {
     explanation: "Independent custom weight sliders for identity, pose, camera framing, and style."
   }
 };
+
+function loadCuratedReference(presetId) {
+  triggerHaptic();
+  const preset = CURATED_REFERENCE_PRESETS[presetId];
+  if (!preset) return;
+
+  setImagineInputMode('img2img');
+  APP_STATE.referenceImageBase64 = preset.url;
+  APP_STATE.conditioning.referenceUrl = preset.url;
+  APP_STATE.conditioning.uploadedPublicUrl = preset.url;
+
+  // Apply curated biometric & visual attributes
+  APP_STATE.conditioning.subjectProfile = { ...preset.subject };
+  APP_STATE.conditioning.poseProfile = { ...preset.pose };
+  APP_STATE.conditioning.compositionProfile = { ...preset.composition };
+  APP_STATE.conditioning.styleProfile = { ...preset.style };
+
+  // Set preset to full fidelity
+  setConditioningPreset('full');
+
+  // Update Preview UI
+  const previewImg = document.getElementById('img2img-preview-img');
+  if (previewImg) previewImg.src = preset.url;
+  const previewBox = document.getElementById('img2img-preview-box');
+  if (previewBox) previewBox.classList.remove('hidden');
+  const uploadPrompt = document.getElementById('img2img-upload-prompt');
+  if (uploadPrompt) uploadPrompt.classList.add('hidden');
+
+  // Update input fields & dropdowns
+  const likenessInput = document.getElementById('custom-likeness-input');
+  if (likenessInput) likenessInput.value = preset.subject.customLikenessNotes || '';
+  const poseSelect = document.getElementById('select-pose-angle');
+  if (poseSelect) poseSelect.value = preset.pose.angle;
+  const gazeSelect = document.getElementById('select-gaze-vector');
+  if (gazeSelect) gazeSelect.value = preset.pose.gaze;
+  const framingSelect = document.getElementById('select-cam-framing');
+  if (framingSelect) framingSelect.value = preset.composition.framing;
+  const elevSelect = document.getElementById('select-cam-elevation');
+  if (elevSelect) elevSelect.value = preset.composition.elevation;
+
+  // Update Biometric Tags
+  updateBiometricTagsUI();
+
+  analyzeReferenceImage(preset.url);
+  showToast(`Loaded ${preset.name} reference with strict biometric & pose lock!`, "success");
+}
+
+function updateBiometricTagsUI() {
+  const subj = APP_STATE.conditioning.subjectProfile;
+  if (!subj) return;
+
+  const genderEl = document.getElementById('tag-subject-gender');
+  if (genderEl) genderEl.textContent = subj.gender || 'Person';
+
+  const hairEl = document.getElementById('tag-subject-hair');
+  if (hairEl) hairEl.textContent = subj.hair || 'Hair';
+
+  const eyesEl = document.getElementById('tag-subject-eyes');
+  if (eyesEl) eyesEl.textContent = subj.eyes || 'Eyes';
+
+  const faceEl = document.getElementById('tag-subject-face');
+  if (faceEl) faceEl.textContent = subj.facialFeatures || 'Features';
+
+  const strengthEl = document.getElementById('subject-likeness-strength');
+  if (strengthEl) {
+    if (APP_STATE.conditioning.identityLocked || APP_STATE.conditioning.identityWeight >= 90) {
+      strengthEl.textContent = "Strict Biometric Lock";
+      strengthEl.className = "text-[10px] font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30";
+    } else if (APP_STATE.conditioning.identityWeight >= 60) {
+      strengthEl.textContent = "Strong Likeness Transfer";
+      strengthEl.className = "text-[10px] font-mono text-brand-cyan font-semibold px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30";
+    } else {
+      strengthEl.textContent = "Loose Subject Hint";
+      strengthEl.className = "text-[10px] font-mono text-amber-400 font-semibold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30";
+    }
+  }
+}
+
+function handleCustomLikenessChange(val) {
+  if (!APP_STATE.conditioning.subjectProfile) APP_STATE.conditioning.subjectProfile = {};
+  APP_STATE.conditioning.subjectProfile.customLikenessNotes = val.trim();
+}
+
+function handlePoseAngleChange(val) {
+  if (!APP_STATE.conditioning.poseProfile) APP_STATE.conditioning.poseProfile = {};
+  APP_STATE.conditioning.poseProfile.angle = val;
+  const angleText = document.getElementById('attr-angle-text');
+  if (angleText) angleText.textContent = val;
+}
+
+function handleGazeVectorChange(val) {
+  if (!APP_STATE.conditioning.poseProfile) APP_STATE.conditioning.poseProfile = {};
+  APP_STATE.conditioning.poseProfile.gaze = val;
+}
+
+function handleCamFramingChange(val) {
+  if (!APP_STATE.conditioning.compositionProfile) APP_STATE.conditioning.compositionProfile = {};
+  APP_STATE.conditioning.compositionProfile.framing = val;
+  const framingText = document.getElementById('attr-framing-text');
+  if (framingText) framingText.textContent = val;
+}
+
+function handleCamElevationChange(val) {
+  if (!APP_STATE.conditioning.compositionProfile) APP_STATE.conditioning.compositionProfile = {};
+  APP_STATE.conditioning.compositionProfile.elevation = val;
+}
 
 function setConditioningPreset(mode) {
   triggerHaptic();
@@ -566,14 +787,7 @@ function syncConditioningUI() {
   // Master reference weight
   const sliderRef = document.getElementById('slider-ref-weight');
   if (sliderRef) sliderRef.value = cond.referenceWeight;
-  const refBadge = document.getElementById('ref-weight-badge');
-  if (refBadge) {
-    let tag = "Creative Bias";
-    if (cond.referenceWeight >= 90) tag = "Strict Clamp";
-    else if (cond.referenceWeight >= 75) tag = "Targeted Guidance";
-    else if (cond.referenceWeight >= 50) tag = "Balanced Blend";
-    refBadge.textContent = `${cond.referenceWeight}% ${tag}`;
-  }
+  handleRefWeightChange(cond.referenceWeight);
 
   // Identity channel
   const sliderId = document.getElementById('slider-identity-weight');
@@ -606,19 +820,52 @@ function syncConditioningUI() {
   if (valStyle) valStyle.textContent = `${cond.styleWeight}%`;
   const lockStyle = document.getElementById('lock-style');
   if (lockStyle) lockStyle.checked = cond.styleLocked;
+
+  // Sync inputs & biometrics
+  if (cond.subjectProfile) {
+    const likenessInput = document.getElementById('custom-likeness-input');
+    if (likenessInput && cond.subjectProfile.customLikenessNotes !== undefined) {
+      likenessInput.value = cond.subjectProfile.customLikenessNotes;
+    }
+  }
+  if (cond.poseProfile) {
+    const poseSelect = document.getElementById('select-pose-angle');
+    if (poseSelect && cond.poseProfile.angle) poseSelect.value = cond.poseProfile.angle;
+    const gazeSelect = document.getElementById('select-gaze-vector');
+    if (gazeSelect && cond.poseProfile.gaze) gazeSelect.value = cond.poseProfile.gaze;
+  }
+  if (cond.compositionProfile) {
+    const framingSelect = document.getElementById('select-cam-framing');
+    if (framingSelect && cond.compositionProfile.framing) framingSelect.value = cond.compositionProfile.framing;
+    const elevSelect = document.getElementById('select-cam-elevation');
+    if (elevSelect && cond.compositionProfile.elevation) elevSelect.value = cond.compositionProfile.elevation;
+  }
+
+  updateBiometricTagsUI();
 }
 
 function handleRefWeightChange(val) {
   const num = parseInt(val, 10);
   APP_STATE.conditioning.referenceWeight = num;
+
   const badge = document.getElementById('ref-weight-badge');
-  if (badge) {
-    let tag = "Creative Bias";
-    if (num >= 90) tag = "Strict Clamp";
-    else if (num >= 75) tag = "Targeted Guidance";
-    else if (num >= 50) tag = "Balanced Blend";
-    badge.textContent = `${num}% ${tag}`;
-  }
+  const centerLabel = document.getElementById('balance-center-label');
+  const promptGauge = document.getElementById('gauge-prompt-fill');
+  const refGauge = document.getElementById('gauge-ref-fill');
+
+  if (promptGauge) promptGauge.style.width = `${100 - num}%`;
+  if (refGauge) refGauge.style.width = `${num}%`;
+
+  let tag = "Creative Prompt Dominance";
+  if (num >= 95) tag = "100% Strict Visual Clamp";
+  else if (num >= 80) tag = `${num}% Targeted Visual Lock (High Fidelity)`;
+  else if (num >= 60) tag = `${num}% Strong Visual Guidance`;
+  else if (num >= 40) tag = `${num}% Balanced Creative Fusion`;
+  else if (num >= 20) tag = `${num}% Creative Prompt Bias`;
+  else tag = `${num}% Loose Inspiration Only`;
+
+  if (badge) badge.textContent = tag;
+  if (centerLabel) centerLabel.textContent = `${num}% Reference Guidance`;
 }
 
 function handleChannelWeightChange(channel, val) {
@@ -640,6 +887,8 @@ function handleChannelWeightChange(channel, val) {
     const el = document.getElementById('val-style-weight');
     if (el) el.textContent = `${num}%`;
   }
+
+  updateBiometricTagsUI();
 
   // Switch to custom preset mode UI
   if (APP_STATE.conditioning.mode !== 'custom') {
@@ -671,6 +920,8 @@ function toggleChannelLock(channel) {
   } else if (channel === 'style') {
     APP_STATE.conditioning.styleLocked = document.getElementById('lock-style').checked;
   }
+  updateBiometricTagsUI();
+}
 }
 
 function setRefSourceMode(mode) {
