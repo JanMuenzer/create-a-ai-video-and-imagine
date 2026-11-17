@@ -1095,6 +1095,10 @@ function analyzeReferenceImage(imageSrc) {
       let skinMinY = 120, skinMaxY = 0;
       let skinMinX = 120, skinMaxX = 0;
       let skinXSum = 0;
+      let skinLumaSum = 0;
+      let topRegionLuma = 0;
+      let topRegionPixels = 0;
+      let topRed = 0, topGreen = 0, topBlue = 0;
       const colorSamples = [];
 
       for (let y = 0; y < 120; y++) {
@@ -1109,9 +1113,19 @@ function analyzeReferenceImage(imageSrc) {
           if (x < 60) leftLuma += luma;
           else rightLuma += luma;
 
+          // Upper region for hair color estimation (top 30%)
+          if (y < 36 && x > 20 && x < 100) {
+            topRegionLuma += luma;
+            topRed += r;
+            topGreen += g;
+            topBlue += b;
+            topRegionPixels++;
+          }
+
           // Warm/skin centroid detection
           if (r > 60 && g > 40 && b > 25 && r > b && (r - g) > 8) {
             skinPixels++;
+            skinLumaSum += luma;
             if (y < skinMinY) skinMinY = y;
             if (y > skinMaxY) skinMaxY = y;
             if (x < skinMinX) skinMinX = x;
@@ -1130,36 +1144,84 @@ function analyzeReferenceImage(imageSrc) {
       const avgRight = rightLuma / 7200;
 
       // Framing estimation
-      let framingTag = "Medium Portrait (85mm)";
+      let framingTag = "Tight Close-up Portrait (85mm Lens)";
       const faceHeight = skinMaxY > skinMinY ? (skinMaxY - skinMinY) : 50;
       if (faceHeight > 75) {
-        framingTag = "Close-up Portrait (85mm)";
+        framingTag = "Tight Close-up Portrait (85mm Lens)";
       } else if (faceHeight < 35) {
-        framingTag = "Environmental Shot (35mm)";
+        framingTag = "Wide Environmental Cinematic Shot";
       } else {
-        framingTag = "Medium Portrait (50mm)";
+        framingTag = "Medium Bust Portrait (50mm Lens)";
       }
 
       // Facial Orientation & Gaze estimation
-      let angleTag = "Frontal Direct Gaze";
+      let angleTag = "Frontal Direct Gaze (0°)";
+      let gazeTag = "Direct Eye Contact with Camera";
       if (skinPixels > 200) {
         const avgFaceX = skinXSum / skinPixels;
-        if (avgFaceX < 50) angleTag = "3/4 Profile Turned Right";
-        else if (avgFaceX > 70) angleTag = "3/4 Profile Turned Left";
-        else angleTag = "Frontal Direct Gaze";
+        if (avgFaceX < 50) {
+          angleTag = "3/4 Turn Facing Right (25°)";
+          gazeTag = "Direct Eye Contact with Camera";
+        } else if (avgFaceX > 70) {
+          angleTag = "3/4 Turn Facing Left (25°)";
+          gazeTag = "Direct Eye Contact with Camera";
+        } else {
+          angleTag = "Frontal Direct Gaze (0°)";
+          gazeTag = "Direct Eye Contact with Camera";
+        }
+      }
+
+      // Camera Elevation estimation
+      let elevationTag = "Eye-Level Perspective";
+      if (skinMinY < 15) {
+        elevationTag = "Eye-Level Perspective";
+      } else if (skinMinY > 35) {
+        elevationTag = "High-Angle Looking Down";
+      }
+
+      // Hair & Complexion estimation
+      let hairTag = "Dark brunette wavy hair with middle part";
+      if (topRegionPixels > 0) {
+        const avgTopR = topRed / topRegionPixels;
+        const avgTopG = topGreen / topRegionPixels;
+        const avgTopB = topBlue / topRegionPixels;
+        const avgTopL = topRegionLuma / topRegionPixels;
+
+        if (avgTopL < 40) {
+          hairTag = "Jet black textured hair";
+        } else if (avgTopR > 140 && avgTopG > 115 && avgTopB < 95) {
+          hairTag = "Golden blonde sun-kissed hair";
+        } else if (avgTopR > 130 && avgTopG < 90 && avgTopB < 70) {
+          hairTag = "Vibrant auburn red hair";
+        } else if (avgTopL > 135 && Math.abs(avgTopR - avgTopB) < 20) {
+          hairTag = "Distinguished silver-ash hair";
+        } else {
+          hairTag = "Dark brunette wavy hair";
+        }
+      }
+
+      let complexionTag = "Warm olive complexion";
+      if (skinPixels > 50) {
+        const avgSkinL = skinLumaSum / skinPixels;
+        if (avgSkinL > 170) complexionTag = "Fair porcelain skin with natural glow";
+        else if (avgSkinL > 135) complexionTag = "Warm peach complexion";
+        else if (avgSkinL > 90) complexionTag = "Warm olive complexion";
+        else complexionTag = "Deep radiant bronze complexion";
       }
 
       // Lighting estimation
-      let lightingTag = "Balanced Studio Lighting";
+      let lightingTag = "Balanced Studio Key Lighting";
       const lumaDiff = Math.abs(avgLeft - avgRight);
       if (lumaDiff > 25) {
-        lightingTag = avgLeft > avgRight ? "Dramatic Key-Left Lighting" : "Dramatic Key-Right Lighting";
+        lightingTag = avgLeft > avgRight 
+          ? "Dramatic Directional Key-Left Lighting with chiaroscuro contrast" 
+          : "Dramatic Directional Key-Right Lighting with chiaroscuro contrast";
       } else if (avgLuma > 165) {
-        lightingTag = "High-Key Soft Diffused";
+        lightingTag = "High-Key Soft Diffused Natural Daylight";
       } else if (avgLuma < 85) {
-        lightingTag = "Moody Chiaroscuro Low-Key";
+        lightingTag = "Moody Chiaroscuro Low-Key Rim Lighting";
       } else {
-        lightingTag = "Cinematic Ambient Lighting";
+        lightingTag = "Cinematic Studio Key Light with subtle rim separation";
       }
 
       const palette = getDominantPalette(colorSamples);
@@ -1174,6 +1236,34 @@ function analyzeReferenceImage(imageSrc) {
         aspectHeight: rHeight
       };
 
+      // Only overwrite subject profiles if not loaded from a curated preset
+      if (!APP_STATE.conditioning.subjectProfile || !APP_STATE.conditioning.subjectProfile.name) {
+        APP_STATE.conditioning.subjectProfile = {
+          name: 'Custom Reference Person',
+          gender: 'Person',
+          hair: hairTag,
+          eyes: 'Natural expressive eyes',
+          facialFeatures: 'Defined jawline, sculpted cheekbones, facial symmetry',
+          complexion: complexionTag,
+          customLikenessNotes: `${hairTag}, ${complexionTag}`
+        };
+        APP_STATE.conditioning.poseProfile = {
+          angle: angleTag,
+          gaze: gazeTag,
+          shoulders: 'Matching shoulder posture'
+        };
+        APP_STATE.conditioning.compositionProfile = {
+          framing: framingTag,
+          elevation: elevationTag,
+          focalLength: '85mm lens'
+        };
+        APP_STATE.conditioning.styleProfile = {
+          lighting: lightingTag,
+          palette: palette
+        };
+      }
+
+      // Update UI elements
       const attrBox = document.getElementById('ref-attributes-box');
       if (attrBox) attrBox.classList.remove('hidden');
 
@@ -1199,6 +1289,30 @@ function analyzeReferenceImage(imageSrc) {
         syncBtn.title = `Match canvas aspect ratio to reference (${bestRatio})`;
       }
 
+      // Update Biometric UI
+      updateBiometricTagsUI();
+
+      const likenessInput = document.getElementById('custom-likeness-input');
+      if (likenessInput && APP_STATE.conditioning.subjectProfile && APP_STATE.conditioning.subjectProfile.customLikenessNotes) {
+        likenessInput.value = APP_STATE.conditioning.subjectProfile.customLikenessNotes;
+      }
+      const poseSelect = document.getElementById('select-pose-angle');
+      if (poseSelect && APP_STATE.conditioning.poseProfile && APP_STATE.conditioning.poseProfile.angle) {
+        poseSelect.value = APP_STATE.conditioning.poseProfile.angle;
+      }
+      const gazeSelect = document.getElementById('select-gaze-vector');
+      if (gazeSelect && APP_STATE.conditioning.poseProfile && APP_STATE.conditioning.poseProfile.gaze) {
+        gazeSelect.value = APP_STATE.conditioning.poseProfile.gaze;
+      }
+      const framingSelect = document.getElementById('select-cam-framing');
+      if (framingSelect && APP_STATE.conditioning.compositionProfile && APP_STATE.conditioning.compositionProfile.framing) {
+        framingSelect.value = APP_STATE.conditioning.compositionProfile.framing;
+      }
+      const elevSelect = document.getElementById('select-cam-elevation');
+      if (elevSelect && APP_STATE.conditioning.compositionProfile && APP_STATE.conditioning.compositionProfile.elevation) {
+        elevSelect.value = APP_STATE.conditioning.compositionProfile.elevation;
+      }
+
       uploadReferenceImageBackground(imageSrc);
 
     } catch (err) {
@@ -1209,46 +1323,96 @@ function analyzeReferenceImage(imageSrc) {
   img.src = imageSrc;
 }
 
-function buildConditioningDirectives() {
+function buildConditioningPayload(userPrompt) {
   const cond = APP_STATE.conditioning;
+  const refWeight = cond.referenceWeight !== undefined ? cond.referenceWeight : 85;
+  const subj = cond.subjectProfile || {};
+  const pose = cond.poseProfile || {};
+  const comp = cond.compositionProfile || {};
+  const style = cond.styleProfile || {};
   const attrs = cond.referenceAttributes || {};
-  const directives = [];
 
-  // 1. Identity & Facial Likeness Preservation
-  if (cond.identityWeight >= 30) {
-    const weightLabel = cond.identityWeight >= 85 ? "strict identity preservation" : "strong facial likeness";
-    directives.push(
-      `[Identity Conditioning (${cond.identityWeight}%): ${weightLabel}, identical person as reference image, identical facial bone structure, defined jawline, identical eye shape and iris color, matching nose bridge and cheekbones, identical facial symmetry, matching skin tone and complexion, matching hair texture and hairline]`
-    );
+  // 1. Identity Likeness Segment
+  let identitySegment = '';
+  if (cond.identityWeight >= 20) {
+    const strictness = cond.identityWeight >= 85 
+      ? "identical person, exact facial likeness and bone structure, defined jawline and cheekbones" 
+      : (cond.identityWeight >= 60 ? "strong facial likeness and matching features" : "subtle resemblance");
+    
+    const likenessNotes = subj.customLikenessNotes ? `, ${subj.customLikenessNotes}` : '';
+    const hair = subj.hair ? `with ${subj.hair}` : 'matching hair';
+    const eyes = subj.eyes ? `${subj.eyes}` : 'matching eye color';
+    const face = subj.facialFeatures ? `${subj.facialFeatures}` : 'distinctive facial structure';
+    const compx = subj.complexion ? `${subj.complexion}` : 'matching skin tone';
+    const gender = subj.gender ? `${subj.gender}` : 'person';
+
+    identitySegment = `award-winning photograph featuring the exact same ${gender} from reference image ${hair}, ${eyes}, ${face}, ${compx}${likenessNotes}, preserving ${strictness}`;
   }
 
-  // 2. Pose & Facial Orientation Fidelity
-  if (cond.poseWeight >= 30) {
-    const angleText = attrs.faceAngle || "matching head tilt and 3/4 turn";
-    const weightLabel = cond.poseWeight >= 85 ? "exact pose lock" : "matching posture";
-    directives.push(
-      `[Pose Conditioning (${cond.poseWeight}%): ${weightLabel}, ${angleText}, identical head pitch and yaw angle, matching eye gaze direction, identical neck and shoulder alignment, matching torso rotation and body posture]`
-    );
+  // 2. Pose & Facial Orientation Segment
+  let poseSegment = '';
+  if (cond.poseWeight >= 20) {
+    const angle = pose.angle || attrs.faceAngle || "3/4 Turn Facing Left (25°)";
+    const gaze = pose.gaze || "Direct Eye Contact with Camera";
+    const posture = pose.shoulders || "matching shoulders and torso angle";
+    const strictness = cond.poseWeight >= 85 ? "exact matching pose and orientation" : "similar pose";
+    poseSegment = `captured in ${strictness}: head turned at ${angle}, eyes looking in ${gaze}, ${posture}, matching head tilt and neck posture`;
   }
 
-  // 3. Camera Angle & Composition Fidelity
-  if (cond.compositionWeight >= 30) {
-    const framingText = attrs.framing || "close-up portrait framing";
-    const weightLabel = cond.compositionWeight >= 85 ? "exact camera angle and composition lock" : "matching camera viewpoint";
-    directives.push(
-      `[Composition Conditioning (${cond.compositionWeight}%): ${weightLabel}, ${framingText}, identical camera perspective, matching camera elevation, matching 85mm lens focal length, subject anchored in same screen-space framing, rule-of-thirds composition]`
-    );
+  // 3. Camera Angle & Composition Segment
+  let compSegment = '';
+  if (cond.compositionWeight >= 20) {
+    const framing = comp.framing || attrs.framing || "Tight Close-up Portrait (85mm Lens)";
+    const elevation = comp.elevation || "Eye-Level Perspective";
+    const focal = comp.focalLength || "85mm lens";
+    const strictness = cond.compositionWeight >= 85 ? "exact camera composition" : "matching framing";
+    compSegment = `shot with ${strictness}: ${framing}, ${elevation}, ${focal}, identical subject placement in frame, shallow depth of field`;
   }
 
-  // 4. Style, Lighting & Atmosphere Transfer
-  if (cond.styleWeight >= 30) {
-    const lightText = attrs.lighting || "dramatic directional lighting";
-    directives.push(
-      `[Style & Lighting Conditioning (${cond.styleWeight}%): ${lightText}, matching key light and rim light direction, matching color temperature, matching chiaroscuro shadow contrast and cinematic depth]`
-    );
+  // 4. Style, Lighting & Atmosphere Segment
+  let styleSegment = '';
+  if (cond.styleWeight >= 20) {
+    const lighting = style.lighting || attrs.lighting || "Dramatic Directional Studio Lighting with chiaroscuro contrast";
+    styleSegment = `${lighting}, matching key light and rim light direction, color temperature, and contrast`;
   }
 
-  return directives;
+  // Synthesis based on Master Reference Weight
+  const conditioningDirectives = [identitySegment, poseSegment, compSegment, styleSegment].filter(Boolean);
+  let finalPrompt = userPrompt;
+
+  if (conditioningDirectives.length > 0) {
+    if (refWeight >= 80) {
+      // Reference-dominant (Strict Visual Conditioning Lock)
+      finalPrompt = `${conditioningDirectives.join(', ')}, recontextualized as: ${userPrompt}, 8k uhd, masterpiece photography, highly detailed, photorealistic, sharp focus`;
+    } else if (refWeight >= 55) {
+      // Targeted Guidance (Balanced fusion)
+      finalPrompt = `${userPrompt}, starring the exact same person (${identitySegment}), maintaining reference stance (${poseSegment}), framed in ${compSegment}, with ${styleSegment}, 8k uhd, cinematic realism`;
+    } else if (refWeight >= 30) {
+      // Loose Inspiration
+      finalPrompt = `${userPrompt}, subtle resemblance to ${subj.gender || 'person'} with ${subj.hair || 'matching hair'}, ${styleSegment}`;
+    } else {
+      // Creative Freedom (Reference ignored or minimal)
+      finalPrompt = userPrompt;
+    }
+  }
+
+  // Anti-Drift Negative Conditioning Tokens
+  const antiDriftTokens = [];
+  if (cond.identityWeight >= 50) {
+    antiDriftTokens.push("different person", "wrong face", "generic face", "altered facial features", "different eye color", "different hair", "morphed face");
+  }
+  if (cond.poseWeight >= 50) {
+    antiDriftTokens.push("different pose", "turned away", "wrong head angle", "opposite gaze", "looking away from camera", "unnatural head tilt");
+  }
+  if (cond.compositionWeight >= 50) {
+    antiDriftTokens.push("wrong framing", "cropped head", "distorted perspective", "wide angle lens distortion");
+  }
+
+  return {
+    fullPrompt: finalPrompt,
+    antiDriftTokens: antiDriftTokens,
+    directives: conditioningDirectives
+  };
 }
 
 // Reference Image upload handler
