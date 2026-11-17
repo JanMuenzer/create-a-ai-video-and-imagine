@@ -30,9 +30,32 @@ const APP_STATE = {
     compositionLocked: true,
     styleLocked: false,
     uploadedPublicUrl: '',
+    subjectProfile: {
+      name: 'Elena',
+      gender: 'Woman (Early 20s)',
+      hair: 'Dark brunette wavy hair with middle part',
+      eyes: 'Hazel almond eyes',
+      facialFeatures: 'Sculpted jawline, defined cheekbones, full lips',
+      complexion: 'Warm olive complexion',
+      customLikenessNotes: 'Elena, athletic elegant facial structure'
+    },
+    poseProfile: {
+      angle: '3/4 Turn Facing Left (25°)',
+      gaze: 'Direct Eye Contact with Camera',
+      shoulders: 'Shoulders angled 3/4 to camera'
+    },
+    compositionProfile: {
+      framing: 'Tight Close-up Portrait (85mm Lens)',
+      elevation: 'Eye-Level Perspective',
+      focalLength: '85mm f/1.4'
+    },
+    styleProfile: {
+      lighting: 'Dramatic Directional Studio Lighting with chiaroscuro contrast',
+      palette: ['#0f172a', '#3b82f6', '#ec4899', '#f8fafc']
+    },
     referenceAttributes: {
-      framing: 'Close-up Portrait',
-      faceAngle: '3/4 View Gaze',
+      framing: 'Close-up Portrait (85mm)',
+      faceAngle: '3/4 Turn Facing Left (25°)',
       lighting: 'Dramatic Chiaroscuro',
       palette: ['#0f172a', '#3b82f6', '#ec4899', '#f8fafc'],
       aspectRatio: '1:1',
