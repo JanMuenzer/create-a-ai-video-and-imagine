@@ -1517,18 +1517,12 @@ async function generateImage() {
     // Reference Image Conditioning Integration
     const isConditioningActive = APP_STATE.imagineMode === 'img2img' && (APP_STATE.referenceImageBase64 || APP_STATE.conditioning.referenceUrl);
 
+    let antiDriftNegative = "";
     if (isConditioningActive) {
-      const directives = buildConditioningDirectives();
-      const refWeight = APP_STATE.conditioning.referenceWeight || 85;
-
-      if (directives.length > 0) {
-        if (refWeight >= 70) {
-          // Lead with targeted conditioning directives for strict latent adherence
-          fullPrompt = `${directives.join('. ')}. Creative context and theme: ${fullPrompt}`;
-        } else {
-          // Blend with creative prompt dominant
-          fullPrompt = `${fullPrompt}, visually conditioned by reference: ${directives.join('. ')}`;
-        }
+      const payload = buildConditioningPayload(fullPrompt);
+      fullPrompt = payload.fullPrompt;
+      if (payload.antiDriftTokens && payload.antiDriftTokens.length > 0) {
+        antiDriftNegative = payload.antiDriftTokens.join(', ');
       }
     }
 
@@ -1543,6 +1537,13 @@ async function generateImage() {
       fullPrompt += ", unrestrained, raw artistic freedom, uncensored";
     }
 
+    // Negative prompt resolution & Anti-drift injection
+    const negInput = document.getElementById('negative-prompt-input');
+    let negativeText = negInput ? negInput.value.trim() : '';
+    if (antiDriftNegative) {
+      negativeText = negativeText ? `${negativeText}, ${antiDriftNegative}` : antiDriftNegative;
+    }
+
     // Pollinations AI URL Construction
     let queryModel = 'flux';
     if (modelSelect === 'flux-realism') queryModel = 'flux-realism';
@@ -1552,6 +1553,10 @@ async function generateImage() {
 
     const encodedPrompt = encodeURIComponent(fullPrompt);
     let imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seedVal}&nologo=true&model=${queryModel}`;
+
+    if (negativeText) {
+      imageUrl += `&negative=${encodeURIComponent(negativeText)}`;
+    }
 
     // Pass public image reference URL if active
     const activeRefUrl = APP_STATE.conditioning.uploadedPublicUrl || APP_STATE.conditioning.referenceUrl;
@@ -1599,6 +1604,10 @@ async function generateImage() {
         poseWeight: APP_STATE.conditioning.poseWeight,
         compositionWeight: APP_STATE.conditioning.compositionWeight,
         styleWeight: APP_STATE.conditioning.styleWeight,
+        subjectProfile: { ...APP_STATE.conditioning.subjectProfile },
+        poseProfile: { ...APP_STATE.conditioning.poseProfile },
+        compositionProfile: { ...APP_STATE.conditioning.compositionProfile },
+        styleProfile: { ...APP_STATE.conditioning.styleProfile },
         attributes: { ...APP_STATE.conditioning.referenceAttributes }
       } : null
     };
@@ -1614,15 +1623,24 @@ async function generateImage() {
 
     // Show/hide Compare with Ref button & badge
     const compareBtn = document.getElementById('btn-compare-ref');
+    const quickToggleBtn = document.getElementById('btn-quick-toggle-ref');
+    const refOverlayImg = document.getElementById('current-ref-overlay');
     const condBadge = document.getElementById('meta-conditioning-badge');
     const condBadgeText = document.getElementById('meta-conditioning-text');
 
     if (isConditioningActive && refSource) {
       if (compareBtn) compareBtn.classList.remove('hidden');
+      if (quickToggleBtn) quickToggleBtn.classList.remove('hidden');
+      if (refOverlayImg) refOverlayImg.src = refSource;
       if (condBadge) {
         condBadge.classList.remove('hidden');
-        if (condBadgeText) condBadgeText.textContent = `Identity ${APP_STATE.conditioning.identityWeight}% • Pose ${APP_STATE.conditioning.poseWeight}%`;
+        if (condBadgeText) condBadgeText.textContent = `Identity ${APP_STATE.conditioning.identityWeight}% • Pose ${APP_STATE.conditioning.poseWeight}% • Cam ${APP_STATE.conditioning.compositionWeight}%`;
       }
+    } else {
+      if (compareBtn) compareBtn.classList.add('hidden');
+      if (quickToggleBtn) quickToggleBtn.classList.add('hidden');
+      if (condBadge) condBadge.classList.add('hidden');
+    }
     } else {
       if (compareBtn) compareBtn.classList.add('hidden');
       if (condBadge) condBadge.classList.add('hidden');
@@ -1725,6 +1743,28 @@ function openLightboxComparison() {
   modal.classList.remove('hidden');
 }
 
+let isRefOverlayShowing = false;
+function toggleReferenceOverlay() {
+  triggerHaptic();
+  const overlay = document.getElementById('current-ref-overlay');
+  const indicator = document.getElementById('ref-overlay-indicator');
+  const btnText = document.getElementById('btn-toggle-ref-text');
+  if (!overlay) return;
+
+  isRefOverlayShowing = !isRefOverlayShowing;
+  if (isRefOverlayShowing) {
+    overlay.classList.remove('opacity-0', 'pointer-events-none');
+    overlay.classList.add('opacity-100');
+    if (indicator) indicator.classList.remove('hidden');
+    if (btnText) btnText.textContent = "View Output";
+  } else {
+    overlay.classList.add('opacity-0', 'pointer-events-none');
+    overlay.classList.remove('opacity-100');
+    if (indicator) indicator.classList.add('hidden');
+    if (btnText) btnText.textContent = "Hold to View Ref";
+  }
+}
+
 function boostConditioningAndRegenerate(channel) {
   triggerHaptic();
   closeComparisonModal();
@@ -1734,11 +1774,24 @@ function boostConditioningAndRegenerate(channel) {
   if (channel === 'identity') {
     const current = APP_STATE.conditioning.identityWeight;
     handleChannelWeightChange('identity', Math.min(100, current + 10));
+    APP_STATE.conditioning.identityLocked = true;
+    const lockEl = document.getElementById('lock-identity');
+    if (lockEl) lockEl.checked = true;
     showToast("Boosted Identity Likeness to " + APP_STATE.conditioning.identityWeight + "%", "success");
   } else if (channel === 'pose') {
     const current = APP_STATE.conditioning.poseWeight;
     handleChannelWeightChange('pose', Math.min(100, current + 10));
+    APP_STATE.conditioning.poseLocked = true;
+    const lockEl = document.getElementById('lock-pose');
+    if (lockEl) lockEl.checked = true;
     showToast("Tightened Pose Alignment to " + APP_STATE.conditioning.poseWeight + "%", "success");
+  } else if (channel === 'composition') {
+    const current = APP_STATE.conditioning.compositionWeight;
+    handleChannelWeightChange('composition', Math.min(100, current + 10));
+    APP_STATE.conditioning.compositionLocked = true;
+    const lockEl = document.getElementById('lock-composition');
+    if (lockEl) lockEl.checked = true;
+    showToast("Locked Camera Framing to " + APP_STATE.conditioning.compositionWeight + "%", "success");
   }
 
   generateImage();
