@@ -17,6 +17,29 @@ const APP_STATE = {
   currentImage: null,
   currentVideo: null,
   referenceImageBase64: null,
+  referenceImageUrl: '',
+  conditioning: {
+    mode: 'full', // 'full' | 'identity' | 'pose' | 'composition' | 'style' | 'custom'
+    referenceWeight: 85, // Master reference conditioning influence (0-100%)
+    identityWeight: 95,  // Identity & facial likeness preservation (0-100%)
+    poseWeight: 90,      // Pose & facial orientation fidelity (0-100%)
+    compositionWeight: 90, // Camera angle & composition fidelity (0-100%)
+    styleWeight: 75,     // Style, lighting & palette transfer (0-100%)
+    identityLocked: true,
+    poseLocked: true,
+    compositionLocked: true,
+    styleLocked: false,
+    uploadedPublicUrl: '',
+    referenceAttributes: {
+      framing: 'Close-up Portrait',
+      faceAngle: '3/4 View Gaze',
+      lighting: 'Dramatic Chiaroscuro',
+      palette: ['#0f172a', '#3b82f6', '#ec4899', '#f8fafc'],
+      aspectRatio: '1:1',
+      aspectWidth: 1024,
+      aspectHeight: 1024
+    }
+  },
   videoSourceImageBase64: null,
   isGeneratingImage: false,
   isGeneratingVideo: false,
@@ -40,6 +63,15 @@ const INITIAL_GALLERY = [
     resolution: '1024x1024',
     seed: 849201,
     uncensored: true,
+    referenceImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1024&q=80',
+    conditioning: {
+      mode: 'full',
+      referenceWeight: 85,
+      identityWeight: 95,
+      poseWeight: 90,
+      compositionWeight: 90,
+      styleWeight: 75
+    },
     timestamp: Date.now() - 3600000 * 5
   },
   {
