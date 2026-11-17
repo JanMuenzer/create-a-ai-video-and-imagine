@@ -1305,7 +1305,6 @@ function boostConditioningAndRegenerate(channel) {
 
   generateImage();
 }
-}
 
 function copyCurrentPrompt() {
   if (APP_STATE.currentImage && APP_STATE.currentImage.prompt) {
