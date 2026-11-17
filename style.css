@@ -85,6 +85,13 @@ body {
   color: #ffffff;
 }
 
+.cond-preset-btn.active {
+  background: rgba(139, 92, 246, 0.25) !important;
+  color: #c4b5fd !important;
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 0 12px -2px rgba(139, 92, 246, 0.35);
+}
+
 /* Glow & neon effects */
 .shadow-neon {
   box-shadow: 0 0 20px -3px rgba(139, 92, 246, 0.45), 0 0 10px -2px rgba(236, 72, 153, 0.25);
