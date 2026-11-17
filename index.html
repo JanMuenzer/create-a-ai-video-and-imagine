@@ -190,31 +190,242 @@
                 <i class="fa-solid fa-font"></i> Text to Image
               </button>
               <button id="imagine-mode-img2img" onclick="setImagineInputMode('img2img')" class="py-2 rounded-lg text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1.5">
-                <i class="fa-solid fa-wand-magic"></i> Image Remix
+                <i class="fa-solid fa-crosshairs text-brand-neon text-xs"></i> Reference Conditioning
               </button>
             </div>
 
-            <!-- Image-to-Image Reference Upload (Hidden by default) -->
-            <div id="img2img-upload-container" class="hidden space-y-2">
-              <label class="text-xs font-semibold text-slate-300 flex items-center justify-between">
-                <span>Reference Image (Remix Source)</span>
-                <span class="text-[10px] text-slate-400">PNG / JPG</span>
-              </label>
-              <div id="dropzone-image" onclick="document.getElementById('img2img-file-input').click()" 
-                class="border-2 border-dashed border-brand-border hover:border-brand-500 rounded-xl p-4 text-center cursor-pointer bg-brand-dark/50 transition-all flex flex-col items-center justify-center gap-2 group">
-                <input type="file" id="img2img-file-input" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
-                <div id="img2img-preview-box" class="hidden w-full max-h-40 rounded-lg overflow-hidden relative">
-                  <img id="img2img-preview-img" src="" alt="Reference Preview" class="w-full h-36 object-cover rounded-lg">
-                  <button onclick="clearImageUpload(event)" class="absolute top-2 right-2 bg-black/70 hover:bg-red-600 text-white p-1 rounded-md text-xs transition-colors">
-                    <i class="fa-solid fa-trash"></i>
+            <!-- Image-to-Image Reference & Precision Conditioning Studio (Hidden by default) -->
+            <div id="img2img-upload-container" class="hidden space-y-3 p-3.5 rounded-xl bg-brand-surface/90 border border-brand-500/30 shadow-[0_0_15px_rgba(139,92,246,0.12)]">
+              
+              <!-- Header Bar with Quick Utility Actions -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-crosshairs text-brand-neon text-xs"></i>
+                  <span class="text-xs font-bold text-white tracking-wide uppercase">Precision Visual Conditioning</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="useCanvasAsReference()" class="text-[10px] text-brand-cyan hover:text-white px-2 py-0.5 rounded bg-brand-cyan/10 border border-brand-cyan/30 transition-all flex items-center gap-1" title="Use current generated image as reference">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> Canvas As Ref
+                  </button>
+                  <button type="button" id="btn-sync-aspect" onclick="syncAspectToMatchReference()" class="hidden text-[10px] text-pink-400 hover:text-white px-2 py-0.5 rounded bg-pink-500/10 border border-pink-500/30 transition-all flex items-center gap-1" title="Match output aspect ratio to reference image">
+                    <i class="fa-solid fa-vector-square"></i> Match Ratio
                   </button>
                 </div>
-                <div id="img2img-upload-prompt" class="flex flex-col items-center">
-                  <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 group-hover:text-brand-500 transition-colors"></i>
-                  <p class="text-xs text-slate-300 font-medium mt-1">Tap to upload reference image</p>
-                  <p class="text-[10px] text-slate-500">AI transforms and remixes this image</p>
+              </div>
+
+              <!-- Input Source Toggle: File Upload vs Web Image URL -->
+              <div class="flex items-center gap-2 text-[11px]">
+                <button type="button" id="ref-source-tab-file" onclick="setRefSourceMode('file')" class="px-2.5 py-1 rounded-md bg-brand-card text-brand-300 font-semibold border border-brand-500/50 flex items-center gap-1 transition-all">
+                  <i class="fa-solid fa-file-arrow-up"></i> Upload File
+                </button>
+                <button type="button" id="ref-source-tab-url" onclick="setRefSourceMode('url')" class="px-2.5 py-1 rounded-md bg-brand-dark text-slate-400 hover:text-white border border-brand-border flex items-center gap-1 transition-all">
+                  <i class="fa-solid fa-link"></i> Web Image URL
+                </button>
+              </div>
+
+              <!-- Source 1: File Dropzone & Preview -->
+              <div id="ref-file-container" class="space-y-2">
+                <div id="dropzone-image" onclick="document.getElementById('img2img-file-input').click()" 
+                  class="border-2 border-dashed border-brand-border hover:border-brand-500 rounded-xl p-3 text-center cursor-pointer bg-brand-dark/50 transition-all flex flex-col items-center justify-center gap-1.5 group relative">
+                  <input type="file" id="img2img-file-input" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                  
+                  <div id="img2img-preview-box" class="hidden w-full relative rounded-lg overflow-hidden border border-brand-border">
+                    <img id="img2img-preview-img" src="" alt="Reference Preview" class="w-full h-36 object-cover rounded-lg">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end justify-between p-2">
+                      <span id="ref-img-meta-badge" class="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-sm text-[10px] font-mono text-brand-cyan">Active Reference</span>
+                      <button type="button" onclick="clearImageUpload(event)" class="bg-black/80 hover:bg-red-600 text-white p-1 rounded-md text-xs transition-colors" title="Remove reference">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div id="img2img-upload-prompt" class="flex flex-col items-center py-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-slate-400 group-hover:text-brand-neon transition-colors"></i>
+                    <p class="text-xs text-slate-200 font-medium mt-1">Drop person or scene reference image here</p>
+                    <p class="text-[10px] text-slate-400">Guarantees identity, pose, facial orientation & framing transfer</p>
+                  </div>
                 </div>
               </div>
+
+              <!-- Source 2: Image URL Input (Hidden by default) -->
+              <div id="ref-url-container" class="hidden space-y-1.5">
+                <div class="flex items-center gap-1.5">
+                  <input type="url" id="ref-url-input" placeholder="https://images.unsplash.com/... or Discord/Imgur link" class="flex-1 bg-brand-dark p-2 rounded-lg border border-brand-border text-slate-200 font-mono text-xs outline-none focus:border-brand-500">
+                  <button type="button" onclick="loadReferenceFromUrlInput()" class="px-3 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition-all">
+                    Load
+                  </button>
+                </div>
+                <p class="text-[10px] text-slate-400">Direct link to any high-res image (JPG / PNG / WebP)</p>
+              </div>
+
+              <!-- AI Visual Attribute Inspection Bar -->
+              <div id="ref-attributes-box" class="hidden space-y-2 pt-1 border-t border-brand-border/60">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="text-slate-300 font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-brain text-brand-cyan text-[10px]"></i> Detected Visual Traits
+                  </span>
+                  <span class="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                    <i class="fa-solid fa-circle-check text-[8px]"></i> Extracted for Conditioning
+                  </span>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
+                  <span id="attr-framing-badge" class="px-2 py-0.5 rounded-full bg-brand-dark border border-brand-border text-slate-300 flex items-center gap-1">
+                    <i class="fa-solid fa-camera text-brand-500"></i> <span id="attr-framing-text">Close-up Portrait</span>
+                  </span>
+                  <span id="attr-angle-badge" class="px-2 py-0.5 rounded-full bg-brand-dark border border-brand-border text-slate-300 flex items-center gap-1">
+                    <i class="fa-solid fa-user text-brand-cyan"></i> <span id="attr-angle-text">3/4 View Gaze</span>
+                  </span>
+                  <span id="attr-lighting-badge" class="px-2 py-0.5 rounded-full bg-brand-dark border border-brand-border text-slate-300 flex items-center gap-1">
+                    <i class="fa-solid fa-sun text-amber-400"></i> <span id="attr-lighting-text">Chiaroscuro</span>
+                  </span>
+                  <div id="attr-palette-swatches" class="flex items-center gap-1 ml-auto px-1.5 py-0.5 bg-brand-dark rounded-full border border-brand-border" title="Extracted color palette">
+                    <!-- Palette circles populated via JS -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Conditioning Mode Selector (Presets) -->
+              <div class="space-y-1.5 pt-1">
+                <label class="text-[11px] font-semibold text-slate-300 flex items-center justify-between">
+                  <span>Conditioning Mode & Target</span>
+                  <span id="cond-mode-status" class="text-[10px] font-mono text-brand-neon">Full Fidelity Lock</span>
+                </label>
+                <div class="grid grid-cols-3 gap-1.5 text-[11px]">
+                  <button type="button" onclick="setConditioningPreset('full')" id="preset-cond-full" class="cond-preset-btn active py-1.5 px-2 rounded-lg bg-brand-600/30 text-brand-200 border border-brand-500 font-semibold flex flex-col items-center text-center transition-all">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-bullseye text-[10px]"></i> Full Lock</span>
+                    <span class="text-[9px] text-slate-400 font-normal">Identity + Pose + Cam</span>
+                  </button>
+                  <button type="button" onclick="setConditioningPreset('identity')" id="preset-cond-identity" class="cond-preset-btn py-1.5 px-2 rounded-lg bg-brand-dark text-slate-400 border border-brand-border hover:text-white flex flex-col items-center text-center transition-all">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-fingerprint text-[10px]"></i> Identity Lock</span>
+                    <span class="text-[9px] text-slate-500 font-normal">Face & Likeness</span>
+                  </button>
+                  <button type="button" onclick="setConditioningPreset('pose')" id="preset-cond-pose" class="cond-preset-btn py-1.5 px-2 rounded-lg bg-brand-dark text-slate-400 border border-brand-border hover:text-white flex flex-col items-center text-center transition-all">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-person text-[10px]"></i> Pose Transfer</span>
+                    <span class="text-[9px] text-slate-500 font-normal">Head Tilt & Posture</span>
+                  </button>
+                  <button type="button" onclick="setConditioningPreset('composition')" id="preset-cond-composition" class="cond-preset-btn py-1.5 px-2 rounded-lg bg-brand-dark text-slate-400 border border-brand-border hover:text-white flex flex-col items-center text-center transition-all">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-crop-simple text-[10px]"></i> Camera Lock</span>
+                    <span class="text-[9px] text-slate-500 font-normal">Framing & Angle</span>
+                  </button>
+                  <button type="button" onclick="setConditioningPreset('style')" id="preset-cond-style" class="cond-preset-btn py-1.5 px-2 rounded-lg bg-brand-dark text-slate-400 border border-brand-border hover:text-white flex flex-col items-center text-center transition-all">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-palette text-[10px]"></i> Style & Light</span>
+                    <span class="text-[9px] text-slate-500 font-normal">Mood & Palette</span>
+                  </button>
+                  <button type="button" onclick="setConditioningPreset('custom')" id="preset-cond-custom" class="cond-preset-btn py-1.5 px-2 rounded-lg bg-brand-dark text-slate-400 border border-brand-border hover:text-white flex flex-col items-center text-center transition-all">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-sliders text-[10px]"></i> Custom Matrix</span>
+                    <span class="text-[9px] text-slate-500 font-normal">Independent Sliders</span>
+                  </button>
+                </div>
+                <p id="cond-mode-explanation" class="text-[10px] text-slate-400 italic">Locks person likeness, facial angle, gaze, body pose, and camera composition while applying prompt modifications.</p>
+              </div>
+
+              <!-- Master Reference Weighting (Prompt vs Reference Balance) -->
+              <div class="space-y-1 bg-brand-dark/70 p-2.5 rounded-lg border border-brand-border/70">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-semibold text-slate-200 flex items-center gap-1">
+                    <i class="fa-solid fa-scale-balanced text-brand-neon text-[10px]"></i> Reference Conditioning Weight
+                  </span>
+                  <span id="ref-weight-badge" class="font-mono text-brand-cyan font-bold text-xs">85% Guidance</span>
+                </div>
+                <input type="range" id="slider-ref-weight" min="10" max="100" value="85" step="1" oninput="handleRefWeightChange(this.value)" class="w-full accent-brand-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg">
+                <div class="flex justify-between text-[9px] text-slate-400 font-mono">
+                  <span>Creative Prompt Bias (0%)</span>
+                  <span class="text-brand-300">Targeted Guidance (85%)</span>
+                  <span>Strict Clamp (100%)</span>
+                </div>
+              </div>
+
+              <!-- Granular Channel Matrix (Accordion / Pro Controls) -->
+              <details id="cond-matrix-details" class="group bg-brand-dark/50 p-2.5 rounded-lg border border-brand-border/60">
+                <summary class="cursor-pointer text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-between">
+                  <span class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-network-wired text-brand-cyan text-[11px]"></i>
+                    <span>Separate Controls for Identity, Pose, Cam & Style</span>
+                  </span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-brand-cyan font-mono group-open:hidden">Identity 95% • Pose 90% • Cam 90%</span>
+                    <i class="fa-solid fa-chevron-down text-[10px] group-open:rotate-180 transition-transform"></i>
+                  </div>
+                </summary>
+
+                <div class="pt-3 space-y-3">
+                  <!-- Channel 1: Identity & Likeness Preservation -->
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <label class="text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-fingerprint text-brand-neon text-[11px]"></i>
+                        <span class="font-medium">Identity & Facial Likeness</span>
+                      </label>
+                      <div class="flex items-center gap-2">
+                        <span id="val-identity-weight" class="font-mono text-brand-neon text-xs font-bold">95%</span>
+                        <label class="text-[10px] text-slate-400 flex items-center gap-1 cursor-pointer">
+                          <input type="checkbox" id="lock-identity" checked onchange="toggleChannelLock('identity')" class="rounded border-slate-700 text-brand-500 focus:ring-0">
+                          <span>Lock</span>
+                        </label>
+                      </div>
+                    </div>
+                    <input type="range" id="slider-identity-weight" min="0" max="100" value="95" oninput="handleChannelWeightChange('identity', this.value)" class="w-full accent-brand-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg">
+                    <p class="text-[9px] text-slate-400">Strict facial bone structure, jawline, eye shape, nose bridge, facial symmetry, skin tone & hair texture.</p>
+                  </div>
+
+                  <!-- Channel 2: Pose & Facial Orientation -->
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <label class="text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-person-walking text-cyan-400 text-[11px]"></i>
+                        <span class="font-medium">Pose & Facial Orientation</span>
+                      </label>
+                      <div class="flex items-center gap-2">
+                        <span id="val-pose-weight" class="font-mono text-cyan-400 text-xs font-bold">90%</span>
+                        <label class="text-[10px] text-slate-400 flex items-center gap-1 cursor-pointer">
+                          <input type="checkbox" id="lock-pose" checked onchange="toggleChannelLock('pose')" class="rounded border-slate-700 text-brand-500 focus:ring-0">
+                          <span>Lock</span>
+                        </label>
+                      </div>
+                    </div>
+                    <input type="range" id="slider-pose-weight" min="0" max="100" value="90" oninput="handleChannelWeightChange('pose', this.value)" class="w-full accent-cyan-400 cursor-pointer h-1.5 bg-slate-700 rounded-lg">
+                    <p class="text-[9px] text-slate-400">Head tilt (yaw/pitch/roll), 3/4 turn angle, eye gaze direction, neck & shoulder posture.</p>
+                  </div>
+
+                  <!-- Channel 3: Camera Angle & Composition -->
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <label class="text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-camera-retro text-pink-400 text-[11px]"></i>
+                        <span class="font-medium">Camera Angle & Composition</span>
+                      </label>
+                      <div class="flex items-center gap-2">
+                        <span id="val-comp-weight" class="font-mono text-pink-400 text-xs font-bold">90%</span>
+                        <label class="text-[10px] text-slate-400 flex items-center gap-1 cursor-pointer">
+                          <input type="checkbox" id="lock-composition" checked onchange="toggleChannelLock('composition')" class="rounded border-slate-700 text-brand-500 focus:ring-0">
+                          <span>Lock</span>
+                        </label>
+                      </div>
+                    </div>
+                    <input type="range" id="slider-comp-weight" min="0" max="100" value="90" oninput="handleChannelWeightChange('composition', this.value)" class="w-full accent-pink-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg">
+                    <p class="text-[9px] text-slate-400">Camera elevation, lens focal length, shot framing (close-up/medium/wide), & subject screen position.</p>
+                  </div>
+
+                  <!-- Channel 4: Style, Lighting & Atmosphere -->
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <label class="text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-[11px]"></i>
+                        <span class="font-medium">Style & Lighting Transfer</span>
+                      </label>
+                      <div class="flex items-center gap-2">
+                        <span id="val-style-weight" class="font-mono text-amber-400 text-xs font-bold">75%</span>
+                        <label class="text-[10px] text-slate-400 flex items-center gap-1 cursor-pointer">
+                          <input type="checkbox" id="lock-style" onchange="toggleChannelLock('style')" class="rounded border-slate-700 text-brand-500 focus:ring-0">
+                          <span>Lock</span>
+                        </label>
+                      </div>
+                    </div>
+                    <input type="range" id="slider-style-weight" min="0" max="100" value="75" oninput="handleChannelWeightChange('style', this.value)" class="w-full accent-amber-400 cursor-pointer h-1.5 bg-slate-700 rounded-lg">
+                    <p class="text-[9px] text-slate-400">Color temperature, directional key/rim lighting, chiaroscuro contrast, & aesthetic mood.</p>
+                  </div>
+                </div>
+              </details>
             </div>
 
             <!-- Prompt Input Box -->
