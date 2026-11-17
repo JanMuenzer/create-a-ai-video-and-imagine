@@ -197,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGalleryGrid();
   renderPromptsVault();
   updateGalleryBadges();
+  syncConditioningUI();
 
   // Load saved settings into modal inputs
   if (document.getElementById('github-token-input')) {
@@ -922,7 +923,6 @@ function toggleChannelLock(channel) {
   }
   updateBiometricTagsUI();
 }
-}
 
 function setRefSourceMode(mode) {
   triggerHaptic();
@@ -1639,10 +1639,6 @@ async function generateImage() {
     } else {
       if (compareBtn) compareBtn.classList.add('hidden');
       if (quickToggleBtn) quickToggleBtn.classList.add('hidden');
-      if (condBadge) condBadge.classList.add('hidden');
-    }
-    } else {
-      if (compareBtn) compareBtn.classList.add('hidden');
       if (condBadge) condBadge.classList.add('hidden');
     }
 
@@ -2408,18 +2404,34 @@ function remixFromLightbox() {
     setImagineInputMode('img2img');
 
     // Load as active reference image
-    APP_STATE.referenceImageBase64 = activeLightboxItem.url;
-    APP_STATE.conditioning.referenceUrl = activeLightboxItem.url;
-    APP_STATE.conditioning.uploadedPublicUrl = activeLightboxItem.url;
+    const refToLoad = activeLightboxItem.referenceImage || activeLightboxItem.url;
+    APP_STATE.referenceImageBase64 = refToLoad;
+    APP_STATE.conditioning.referenceUrl = refToLoad;
+    APP_STATE.conditioning.uploadedPublicUrl = refToLoad;
 
     const previewImg = document.getElementById('img2img-preview-img');
-    if (previewImg) previewImg.src = activeLightboxItem.url;
+    if (previewImg) previewImg.src = refToLoad;
     const previewBox = document.getElementById('img2img-preview-box');
     if (previewBox) previewBox.classList.remove('hidden');
     const uploadPrompt = document.getElementById('img2img-upload-prompt');
     if (uploadPrompt) uploadPrompt.classList.add('hidden');
 
-    analyzeReferenceImage(activeLightboxItem.url);
+    if (activeLightboxItem.conditioning) {
+      if (activeLightboxItem.conditioning.subjectProfile) {
+        APP_STATE.conditioning.subjectProfile = { ...activeLightboxItem.conditioning.subjectProfile };
+      }
+      if (activeLightboxItem.conditioning.poseProfile) {
+        APP_STATE.conditioning.poseProfile = { ...activeLightboxItem.conditioning.poseProfile };
+      }
+      if (activeLightboxItem.conditioning.compositionProfile) {
+        APP_STATE.conditioning.compositionProfile = { ...activeLightboxItem.conditioning.compositionProfile };
+      }
+      if (activeLightboxItem.conditioning.styleProfile) {
+        APP_STATE.conditioning.styleProfile = { ...activeLightboxItem.conditioning.styleProfile };
+      }
+    }
+
+    analyzeReferenceImage(refToLoad);
 
     if (activeLightboxItem.conditioning && activeLightboxItem.conditioning.mode) {
       setConditioningPreset(activeLightboxItem.conditioning.mode);
