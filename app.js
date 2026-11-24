@@ -2611,14 +2611,17 @@ function closeSettingsModal() {
 
 function saveAppSettings() {
   triggerHaptic();
+  const pollenKey = document.getElementById('pollen-key-input') ? document.getElementById('pollen-key-input').value.trim() : '';
   const falKey = document.getElementById('fal-key-input').value.trim();
   const hfToken = document.getElementById('hf-token-input').value.trim();
   const customUrl = document.getElementById('custom-url-input').value.trim();
 
+  APP_STATE.settings.pollenKey = pollenKey;
   APP_STATE.settings.falKey = falKey;
   APP_STATE.settings.hfToken = hfToken;
   APP_STATE.settings.customUrl = customUrl;
 
+  localStorage.setItem('nexus_pollen_key', pollenKey);
   localStorage.setItem('nexus_fal_key', falKey);
   localStorage.setItem('nexus_hf_token', hfToken);
   localStorage.setItem('nexus_custom_url', customUrl);
