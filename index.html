@@ -346,70 +346,214 @@
 
                 <!-- Expandable Fine-Tuning Drawer for Likeness, Pose & Framing Details -->
                 <details class="text-[11px] group">
-                  <summary class="cursor-pointer text-slate-400 hover:text-slate-200 flex items-center justify-between py-1">
-                    <span class="flex items-center gap-1">
-                      <i class="fa-solid fa-sliders text-brand-cyan text-[10px]"></i> Fine-Tune Identity, Pose & Framing Target
+                  <summary class="cursor-pointer text-slate-300 hover:text-white flex items-center justify-between py-1 bg-brand-dark/50 px-2 rounded-lg border border-brand-border/60">
+                    <span class="flex items-center gap-1.5 font-semibold">
+                      <i class="fa-solid fa-sliders text-brand-cyan text-[11px]"></i> Fine-Tune Identity, Pose, Framing & Style
                     </span>
-                    <i class="fa-solid fa-chevron-down text-[9px] group-open:rotate-180 transition-transform"></i>
+                    <i class="fa-solid fa-chevron-down text-[9px] group-open:rotate-180 transition-transform text-slate-400"></i>
                   </summary>
-                  <div class="pt-2 space-y-2.5">
-                    <!-- Custom Likeness Notes -->
-                    <div class="space-y-1">
-                      <label class="text-[10px] font-semibold text-slate-300 flex items-center justify-between">
-                        <span>Specific Likeness & Biometric Notes</span>
-                        <span class="text-[9px] text-slate-500 font-mono">Injected into conditioning anchor</span>
-                      </label>
-                      <input type="text" id="custom-likeness-input" oninput="handleCustomLikenessChange(this.value)" 
-                        placeholder="e.g. Elena, early 20s woman with dark wavy hair, hazel eyes, sharp cheekbones"
-                        class="w-full bg-brand-dark p-2 rounded-lg border border-brand-border text-slate-200 text-xs outline-none focus:border-brand-500">
+                  <div class="pt-2.5 space-y-3">
+                    
+                    <!-- Section 1: Identity & Biometric Profile -->
+                    <div class="p-2 rounded-lg bg-brand-surface/80 border border-brand-border/80 space-y-2">
+                      <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-brand-neon uppercase tracking-wider flex items-center gap-1">
+                          <i class="fa-solid fa-fingerprint"></i> Biometric Identity Anchor
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-mono">Facial bone structure & likeness</span>
+                      </div>
+
+                      <!-- Persona & Specific Likeness Notes -->
+                      <div class="space-y-1">
+                        <label class="text-[10px] font-semibold text-slate-300 flex items-center justify-between">
+                          <span>Specific Likeness & Identifiable Markers</span>
+                          <span class="text-[9px] text-slate-500 font-mono">Injected as priority anchor</span>
+                        </label>
+                        <input type="text" id="custom-likeness-input" oninput="handleCustomLikenessChange(this.value)" 
+                          placeholder="e.g. Elena, early 20s woman with dark wavy hair, hazel eyes, sharp cheekbones"
+                          class="w-full bg-brand-dark p-2 rounded-lg border border-brand-border text-slate-200 text-xs outline-none focus:border-brand-500">
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-2">
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Gender & Age Bracket</label>
+                          <select id="select-subject-gender" onchange="handleSubjectGenderChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="Woman (Early 20s)" selected>Woman (Early 20s)</option>
+                            <option value="Woman (Mid 20s)">Woman (Mid 20s)</option>
+                            <option value="Woman (Early 30s)">Woman (Early 30s)</option>
+                            <option value="Man (Early 20s)">Man (Early 20s)</option>
+                            <option value="Man (Early 30s)">Man (Early 30s)</option>
+                            <option value="Man (Early 40s)">Man (Early 40s)</option>
+                            <option value="Non-Binary (20s)">Non-Binary (20s)</option>
+                            <option value="Person">Person (Neutral)</option>
+                          </select>
+                        </div>
+
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Bone Structure & Jaw</label>
+                          <select id="select-subject-face" onchange="handleSubjectFaceChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="Sculpted jawline, defined cheekbones, full lips, natural brows" selected>Sculpted Jaw & Cheekbones</option>
+                            <option value="Chiseled masculine jawline, strong chin, groomed stubble">Chiseled Square Jaw & Chin</option>
+                            <option value="Soft refined jawline, gentle cheekbones, radiant natural beauty">Soft Refined Oval Face</option>
+                            <option value="Weathered handsome facial lines, square jaw, distinguished features">Weathered Handsome Lines</option>
+                            <option value="Delicate symmetrical facial features, high cheekbones">Symmetrical High Cheekbones</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-3 gap-1.5">
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Hair Style</label>
+                          <select id="select-subject-hair" onchange="handleSubjectHairChange(this.value)" class="w-full bg-brand-dark p-1 rounded-lg border border-brand-border text-slate-200 text-[10px] outline-none focus:border-brand-500">
+                            <option value="Dark brunette wavy hair with middle part" selected>Brunette Wavy</option>
+                            <option value="Short dark textured fade haircut">Short Dark Fade</option>
+                            <option value="Sleek straight dark hair flowing past shoulders">Sleek Straight</option>
+                            <option value="Golden blonde sun-kissed hair">Blonde Sun-Kissed</option>
+                            <option value="Vibrant auburn red hair">Auburn Red</option>
+                            <option value="Jet black textured hair">Jet Black</option>
+                            <option value="Distinguished silver-ash hair">Silver-Ash</option>
+                          </select>
+                        </div>
+
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Eye Shape & Color</label>
+                          <select id="select-subject-eyes" onchange="handleSubjectEyesChange(this.value)" class="w-full bg-brand-dark p-1 rounded-lg border border-brand-border text-slate-200 text-[10px] outline-none focus:border-brand-500">
+                            <option value="Hazel almond eyes, intense expressive gaze" selected>Hazel Almond</option>
+                            <option value="Deep warm brown eyes, direct eye contact">Deep Warm Brown</option>
+                            <option value="Piercing hazel eyes, sharp gaze">Piercing Hazel</option>
+                            <option value="Striking blue almond eyes">Striking Blue</option>
+                            <option value="Dark expressive eyes, natural intensity">Dark Expressive</option>
+                          </select>
+                        </div>
+
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Skin Tone</label>
+                          <select id="select-subject-complexion" onchange="handleSubjectComplexionChange(this.value)" class="w-full bg-brand-dark p-1 rounded-lg border border-brand-border text-slate-200 text-[10px] outline-none focus:border-brand-500">
+                            <option value="Warm olive complexion with natural skin texture" selected>Warm Olive</option>
+                            <option value="Fair porcelain skin with natural radiant glow">Fair Porcelain</option>
+                            <option value="Warm peach complexion, natural skin texture">Warm Peach</option>
+                            <option value="Deep radiant bronze complexion">Deep Bronze</option>
+                            <option value="Rugged sun-kissed skin texture">Sun-Kissed</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
 
-                    <!-- Pose Angle & Gaze Direction Selectors -->
-                    <div class="grid grid-cols-2 gap-2">
-                      <div class="space-y-1">
-                        <label class="text-[10px] font-semibold text-slate-300">Facial Angle / Turn</label>
-                        <select id="select-pose-angle" onchange="handlePoseAngleChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
-                          <option value="3/4 Turn Facing Left (25°)" selected>3/4 Turn Left (25°)</option>
-                          <option value="3/4 Turn Facing Right (25°)">3/4 Turn Right (25°)</option>
-                          <option value="Frontal Direct Gaze (0°)">Frontal Direct (0°)</option>
-                          <option value="Side Profile Facing Left (90°)">Profile Left (90°)</option>
-                          <option value="Side Profile Facing Right (90°)">Profile Right (90°)</option>
-                          <option value="Hero Low-Angle Looking Up">Low-Angle Tilt (Hero)</option>
-                          <option value="High-Angle Looking Down">High-Angle Dramatic</option>
-                        </select>
+                    <!-- Section 2: Pose & Facial Orientation -->
+                    <div class="p-2 rounded-lg bg-brand-surface/80 border border-brand-border/80 space-y-2">
+                      <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1">
+                          <i class="fa-solid fa-person-walking"></i> Pose & Facial Orientation Alignment
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-mono">Head yaw, pitch & gaze vector</span>
                       </div>
 
-                      <div class="space-y-1">
-                        <label class="text-[10px] font-semibold text-slate-300">Gaze Direction</label>
-                        <select id="select-gaze-vector" onchange="handleGazeVectorChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
-                          <option value="Direct Eye Contact with Camera" selected>Direct Eye Contact</option>
-                          <option value="Gazing Off-Camera Left">Looking Off-Camera Left</option>
-                          <option value="Gazing Off-Camera Right">Looking Off-Camera Right</option>
-                          <option value="Thoughtful Downward Gaze">Downward Gaze</option>
-                        </select>
+                      <div class="grid grid-cols-2 gap-2">
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Facial Turn (Yaw Angle)</label>
+                          <select id="select-pose-angle" onchange="handlePoseAngleChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="3/4 Turn Facing Left (25°)" selected>3/4 Turn Left (25°)</option>
+                            <option value="Slight Turn Left (15°)">Slight Turn Left (15°)</option>
+                            <option value="Half Profile Left (45°)">Half Profile Left (45°)</option>
+                            <option value="Side Profile Facing Left (90°)">Full Profile Left (90°)</option>
+                            <option value="Frontal Direct Gaze (0°)">Frontal Direct (0°)</option>
+                            <option value="Slight Turn Right (15°)">Slight Turn Right (15°)</option>
+                            <option value="3/4 Turn Facing Right (25°)">3/4 Turn Right (25°)</option>
+                            <option value="Half Profile Right (45°)">Half Profile Right (45°)</option>
+                            <option value="Side Profile Facing Right (90°)">Full Profile Right (90°)</option>
+                          </select>
+                        </div>
+
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Vertical Tilt (Pitch)</label>
+                          <select id="select-pose-pitch" onchange="handlePosePitchChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="Level Head Tilt (0°)" selected>Level Head Tilt (0°)</option>
+                            <option value="Chin Tilted Up / Heroic (+15°)">Chin Tilted Up Heroic (+15°)</option>
+                            <option value="Chin Tilted Down / Intense (-15°)">Chin Tilted Down Intense (-15°)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-2">
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Eye Gaze Vector</label>
+                          <select id="select-gaze-vector" onchange="handleGazeVectorChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="Direct Eye Contact with Camera (Lens Locked)" selected>Direct Eye Contact (Lens)</option>
+                            <option value="Gazing Off-Camera Left">Looking Off-Camera Left</option>
+                            <option value="Gazing Off-Camera Right">Looking Off-Camera Right</option>
+                            <option value="Thoughtful Downward Gaze">Downward Reflective</option>
+                            <option value="Looking Upward to Light">Looking Upward</option>
+                          </select>
+                        </div>
+
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Torso & Shoulders</label>
+                          <select id="select-pose-shoulders" onchange="handlePoseShouldersChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="Shoulders angled 3/4 to camera matching head turn" selected>Angled 3/4 Matching Face</option>
+                            <option value="Broad shoulders squared directly to camera">Squared to Camera</option>
+                            <option value="Side profile posture aligned with turn">Side Profile Posture</option>
+                            <option value="Relaxed natural posture">Relaxed Natural</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
 
-                    <!-- Camera Framing & Elevation -->
-                    <div class="grid grid-cols-2 gap-2">
-                      <div class="space-y-1">
-                        <label class="text-[10px] font-semibold text-slate-300">Camera Framing / Lens</label>
-                        <select id="select-cam-framing" onchange="handleCamFramingChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
-                          <option value="Tight Close-up Portrait (85mm Lens)" selected>Close-up Portrait (85mm)</option>
-                          <option value="Medium Bust Portrait (50mm Lens)">Medium Portrait (50mm)</option>
-                          <option value="Cowboy / Half-Body Shot (35mm Lens)">Cowboy / Half-Body (35mm)</option>
-                          <option value="Extreme Close-up (Macro Eyes & Face)">Extreme Close-up Macro</option>
-                          <option value="Wide Environmental Cinematic Shot">Wide Environmental</option>
-                        </select>
+                    <!-- Section 3: Camera Angle & Framing Composition -->
+                    <div class="p-2 rounded-lg bg-brand-surface/80 border border-brand-border/80 space-y-2">
+                      <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-pink-400 uppercase tracking-wider flex items-center gap-1">
+                          <i class="fa-solid fa-camera"></i> Camera Angle & Framing Composition
+                        </span>
+                        <span class="text-[9px] text-slate-400 font-mono">Lens, elevation & shot scale</span>
                       </div>
 
-                      <div class="space-y-1">
-                        <label class="text-[10px] font-semibold text-slate-300">Camera Elevation</label>
-                        <select id="select-cam-elevation" onchange="handleCamElevationChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
-                          <option value="Eye-Level Perspective" selected>Eye-Level</option>
-                          <option value="Low-Angle Looking Up">Low-Angle Hero</option>
-                          <option value="High-Angle Looking Down">High-Angle Dramatic</option>
-                        </select>
+                      <div class="grid grid-cols-2 gap-2">
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Shot Framing & Scale</label>
+                          <select id="select-cam-framing" onchange="handleCamFramingChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="Tight Close-up Portrait (85mm Lens, head and shoulders filling 70% of frame)" selected>Tight Close-up (70% frame)</option>
+                            <option value="Medium Bust Portrait (50mm Lens, chest up)">Medium Bust (Chest Up)</option>
+                            <option value="Cowboy / Half-Body Shot (35mm Lens, waist up)">Cowboy / Half-Body (Waist Up)</option>
+                            <option value="Full Figure Shot (head to toe portrait)">Full Figure (Head to Toe)</option>
+                            <option value="Extreme Close-up (Macro Eyes & Face)">Extreme Close-up Macro</option>
+                            <option value="Wide Environmental Cinematic Shot">Wide Environmental</option>
+                          </select>
+                        </div>
+
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Camera Elevation / Perspective</label>
+                          <select id="select-cam-elevation" onchange="handleCamElevationChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="Eye-Level Perspective" selected>Eye-Level Direct (0°)</option>
+                            <option value="Low-Angle Looking Up (Heroic Perspective)">Low-Angle Heroic (Looking Up)</option>
+                            <option value="High-Angle Looking Down (Dramatic Perspective)">High-Angle Dramatic (Looking Down)</option>
+                            <option value="Canted Dutch Angle (Dynamic 15° tilt)">Canted Dutch Angle (15° Tilt)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-2">
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Lens & Optical Blur</label>
+                          <select id="select-cam-lens" onchange="handleFocalLengthChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="85mm f/1.4 prime lens with creamy bokeh" selected>85mm f/1.4 Prime (Bokeh)</option>
+                            <option value="50mm f/1.2 standard lens natural human vision">50mm f/1.2 Natural Standard</option>
+                            <option value="35mm f/1.8 documentary portrait lens">35mm f/1.8 Environmental</option>
+                            <option value="24mm wide anamorphic cinema lens">24mm Wide Anamorphic</option>
+                            <option value="135mm telephoto compressed portrait lens">135mm Telephoto (Compressed)</option>
+                          </select>
+                        </div>
+
+                        <div class="space-y-1">
+                          <label class="text-[10px] font-semibold text-slate-300">Lighting Setup</label>
+                          <select id="select-style-lighting" onchange="handleLightingChange(this.value)" class="w-full bg-brand-dark p-1.5 rounded-lg border border-brand-border text-slate-200 text-[11px] outline-none focus:border-brand-500">
+                            <option value="Dramatic Directional Studio Lighting with chiaroscuro contrast" selected>Dramatic Chiaroscuro</option>
+                            <option value="Crisp Studio Key Light with gentle rim separation">Crisp Studio Key & Rim</option>
+                            <option value="Golden Hour Soft Sunlight with warm rim glow">Golden Hour Warm Glow</option>
+                            <option value="Cyberpunk Neon Volumetric Cyan and Magenta Rim Lighting">Cyberpunk Neon Rim</option>
+                            <option value="Moody Low-Key Film Noir with deep shadow falloff">Moody Low-Key Film Noir</option>
+                            <option value="High-Key Soft Diffused Natural Daylight">High-Key Natural Daylight</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
 
