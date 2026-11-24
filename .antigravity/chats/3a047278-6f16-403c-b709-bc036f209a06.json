@@ -28,6 +28,18 @@
       "created_at": "2026-11-17T18:06:14.583Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "c4f5c9ca-8d3b-49c7-81b4-d435e7dabf8b",
+      "role": "user",
+      "content": "The result is often thematically correct, but the generated person does not resemble the person in the reference image, and the pose or viewpoint also differs significantly.\nFor reference-image-based generation, a stronger and more targeted conditioning mechanism would be very helpful. From a user perspective, the following improvements would be especially valuable:\n \n\n \n• stronger identity preservation for the referenced person\n \n\n \n• better transfer of pose and facial orientation\n \n\n \n• higher fidelity to camera angle and composition\n \n\n \n• adjustable weighting between text prompt and reference image\n \n\n \n• separate controls or modes for identity, pose, style, and composition\n \n\n \n\nAt the moment, it feels like the reference image is being used more as a loose inspiration for style or subject matter rather than as a concrete visual guide for generation. For many use cases, however, it is important that the reference image does not just influence the theme, but also controls the person and presentation much more precisely",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-11-24T00:14:09.154Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
