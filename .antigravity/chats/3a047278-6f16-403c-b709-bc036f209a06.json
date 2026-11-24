@@ -76,6 +76,18 @@
       "created_at": "2026-11-24T00:50:47.526Z",
       "sender": "macOS",
       "is_cancelled": false
+    },
+    {
+      "id": "e2effa9d-e400-408c-96aa-1a930a3c4c58",
+      "role": "user",
+      "content": "Das soll bearbeitet werden und zwar unten rum keine Unterwäsche und dafür realistisch anatomisch naked erstellt werden",
+      "status": "pending",
+      "model": "gemini-3.8-flash-high",
+      "client_type": "gemini-bridge",
+      "parent_message_id": null,
+      "created_at": "2026-11-24T00:53:07.092Z",
+      "sender": "ios",
+      "is_cancelled": false
     }
   ]
 }
