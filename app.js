@@ -466,20 +466,22 @@ const CURATED_REFERENCE_PRESETS = {
       name: 'Elena',
       gender: 'Woman (Early 20s)',
       hair: 'Dark brunette wavy hair with middle part',
-      eyes: 'Hazel almond eyes',
+      eyes: 'Hazel almond eyes, intense expressive gaze',
       facialFeatures: 'Sculpted jawline, defined cheekbones, full lips, natural brows',
-      complexion: 'Warm olive complexion',
-      customLikenessNotes: 'Elena, athletic elegant facial structure'
+      complexion: 'Warm olive complexion with natural skin texture',
+      customLikenessNotes: 'Elena, athletic elegant facial structure and defined cheekbones'
     },
     pose: {
       angle: '3/4 Turn Facing Left (25°)',
-      gaze: 'Direct Eye Contact with Camera',
-      shoulders: 'Shoulders angled 3/4 to camera'
+      pitch: 'Level Head Tilt (0°)',
+      gaze: 'Direct Eye Contact with Camera (Lens Locked)',
+      shoulders: 'Shoulders angled 3/4 to camera matching head turn'
     },
     composition: {
-      framing: 'Tight Close-up Portrait (85mm Lens)',
+      framing: 'Tight Close-up Portrait (85mm Lens, head and shoulders filling 70% of frame)',
       elevation: 'Eye-Level Perspective',
-      focalLength: '85mm f/1.4'
+      focalLength: '85mm f/1.4',
+      lens: '85mm f/1.4 prime lens with creamy bokeh'
     },
     style: {
       lighting: 'Dramatic Directional Studio Lighting with chiaroscuro contrast',
@@ -494,20 +496,22 @@ const CURATED_REFERENCE_PRESETS = {
       name: 'Marcus',
       gender: 'Man (Early 30s)',
       hair: 'Short dark textured fade haircut',
-      eyes: 'Deep warm brown eyes',
+      eyes: 'Deep warm brown eyes, direct eye contact',
       facialFeatures: 'Chiseled masculine jawline, strong chin, groomed stubble beard',
-      complexion: 'Healthy warm skin tone',
+      complexion: 'Healthy warm skin tone with natural skin texture',
       customLikenessNotes: 'Marcus, masculine defined jawline and intense gaze'
     },
     pose: {
       angle: 'Frontal Direct Gaze (0°)',
-      gaze: 'Direct Eye Contact with Camera',
-      shoulders: 'Broad shoulders squared to camera'
+      pitch: 'Level Head Tilt (0°)',
+      gaze: 'Direct Eye Contact with Camera (Lens Locked)',
+      shoulders: 'Broad shoulders squared directly to camera'
     },
     composition: {
-      framing: 'Tight Close-up Portrait (85mm Lens)',
+      framing: 'Tight Close-up Portrait (85mm Lens, head and shoulders filling 70% of frame)',
       elevation: 'Eye-Level Perspective',
-      focalLength: '85mm'
+      focalLength: '85mm',
+      lens: '85mm f/1.4 prime lens with creamy bokeh'
     },
     style: {
       lighting: 'Crisp Studio Key Light with gentle rim separation',
@@ -529,13 +533,15 @@ const CURATED_REFERENCE_PRESETS = {
     },
     pose: {
       angle: '3/4 Turn Facing Right (25°)',
-      gaze: 'Direct Eye Contact with Camera',
-      shoulders: 'Relaxed natural shoulder posture'
+      pitch: 'Level Head Tilt (0°)',
+      gaze: 'Direct Eye Contact with Camera (Lens Locked)',
+      shoulders: 'Relaxed natural posture'
     },
     composition: {
-      framing: 'Medium Bust Portrait (50mm Lens)',
+      framing: 'Medium Bust Portrait (50mm Lens, chest up)',
       elevation: 'Eye-Level Perspective',
-      focalLength: '50mm f/1.2'
+      focalLength: '50mm f/1.2',
+      lens: '50mm f/1.2 standard lens natural human vision'
     },
     style: {
       lighting: 'Golden Hour Soft Sunlight with warm rim glow',
@@ -550,23 +556,25 @@ const CURATED_REFERENCE_PRESETS = {
       name: 'David',
       gender: 'Man (Early 40s)',
       hair: 'Distinguished dark hair with salt and pepper temples',
-      eyes: 'Piercing hazel eyes',
+      eyes: 'Piercing hazel eyes, sharp gaze',
       facialFeatures: 'Weathered handsome facial lines, square jaw, light groomed stubble',
       complexion: 'Rugged sun-kissed skin texture',
       customLikenessNotes: 'David, commanding cinematic presence and sculpted features'
     },
     pose: {
       angle: '3/4 Turn Facing Left (25°)',
+      pitch: 'Chin Tilted Up / Heroic (+15°)',
       gaze: 'Gazing Off-Camera Left',
       shoulders: 'Firm composed posture'
     },
     composition: {
-      framing: 'Tight Close-up Portrait (85mm Lens)',
-      elevation: 'Low-Angle Looking Up',
-      focalLength: '85mm anamorphic'
+      framing: 'Tight Close-up Portrait (85mm Lens, head and shoulders filling 70% of frame)',
+      elevation: 'Low-Angle Looking Up (Heroic Perspective)',
+      focalLength: '85mm anamorphic',
+      lens: '85mm f/1.4 prime lens with creamy bokeh'
     },
     style: {
-      lighting: 'Low-Key Chiaroscuro with intense side rim lighting',
+      lighting: 'Moody Low-Key Film Noir with deep shadow falloff',
       palette: ['#09090b', '#27272a', '#71717a', '#fafafa']
     }
   }
@@ -574,24 +582,24 @@ const CURATED_REFERENCE_PRESETS = {
 
 const CONDITIONING_PRESETS = {
   full: {
-    refWeight: 88,
-    identity: 95,
-    pose: 92,
-    comp: 90,
-    style: 75,
+    refWeight: 90,
+    identity: 98,
+    pose: 95,
+    comp: 95,
+    style: 80,
     lockId: true,
     lockPose: true,
     lockComp: true,
     lockStyle: false,
-    label: "Full Fidelity Lock",
-    explanation: "Locks person identity, facial bone structure, gaze, head tilt, and camera framing while applying prompt modifications."
+    label: "Full Visual Clone",
+    explanation: "Strictly locks person identity, facial bone structure, gaze, head tilt, and camera framing while applying prompt modifications."
   },
   identity: {
-    refWeight: 82,
+    refWeight: 85,
     identity: 98,
-    pose: 35,
-    comp: 40,
-    style: 45,
+    pose: 25,
+    comp: 35,
+    style: 40,
     lockId: true,
     lockPose: false,
     lockComp: false,
@@ -600,24 +608,24 @@ const CONDITIONING_PRESETS = {
     explanation: "Strict face, facial features, bone structure and likeness lock. Lets prompt freely change pose, clothing, and scene."
   },
   pose: {
-    refWeight: 85,
-    identity: 35,
+    refWeight: 88,
+    identity: 25,
     pose: 98,
-    comp: 85,
-    style: 45,
+    comp: 95,
+    style: 35,
     lockId: false,
     lockPose: true,
     lockComp: true,
     lockStyle: false,
     label: "Pose & Orientation Transfer",
-    explanation: "Transfers exact body stance, head tilt, gaze vector, and orientation to a new character or style."
+    explanation: "Transfers exact body stance, head tilt, gaze vector, and orientation to any new character or aesthetic."
   },
   composition: {
-    refWeight: 80,
-    identity: 45,
-    pose: 65,
+    refWeight: 85,
+    identity: 30,
+    pose: 70,
     comp: 98,
-    style: 45,
+    style: 35,
     lockId: false,
     lockPose: false,
     lockComp: true,
@@ -626,10 +634,10 @@ const CONDITIONING_PRESETS = {
     explanation: "Locks camera elevation, lens focal length, shot framing (close-up/medium/wide), and screen composition."
   },
   style: {
-    refWeight: 75,
-    identity: 20,
-    pose: 20,
-    comp: 40,
+    refWeight: 80,
+    identity: 10,
+    pose: 15,
+    comp: 30,
     style: 98,
     lockId: false,
     lockPose: false,
@@ -674,14 +682,34 @@ function loadCuratedReference(presetId) {
   // Update input fields & dropdowns
   const likenessInput = document.getElementById('custom-likeness-input');
   if (likenessInput) likenessInput.value = preset.subject.customLikenessNotes || '';
+  const genderSelect = document.getElementById('select-subject-gender');
+  if (genderSelect && preset.subject.gender) genderSelect.value = preset.subject.gender;
+  const faceSelect = document.getElementById('select-subject-face');
+  if (faceSelect && preset.subject.facialFeatures) faceSelect.value = preset.subject.facialFeatures;
+  const hairSelect = document.getElementById('select-subject-hair');
+  if (hairSelect && preset.subject.hair) hairSelect.value = preset.subject.hair;
+  const eyesSelect = document.getElementById('select-subject-eyes');
+  if (eyesSelect && preset.subject.eyes) eyesSelect.value = preset.subject.eyes;
+  const compxSelect = document.getElementById('select-subject-complexion');
+  if (compxSelect && preset.subject.complexion) compxSelect.value = preset.subject.complexion;
+
   const poseSelect = document.getElementById('select-pose-angle');
   if (poseSelect) poseSelect.value = preset.pose.angle;
+  const pitchSelect = document.getElementById('select-pose-pitch');
+  if (pitchSelect && preset.pose.pitch) pitchSelect.value = preset.pose.pitch;
   const gazeSelect = document.getElementById('select-gaze-vector');
   if (gazeSelect) gazeSelect.value = preset.pose.gaze;
+  const shouldersSelect = document.getElementById('select-pose-shoulders');
+  if (shouldersSelect && preset.pose.shoulders) shouldersSelect.value = preset.pose.shoulders;
+
   const framingSelect = document.getElementById('select-cam-framing');
   if (framingSelect) framingSelect.value = preset.composition.framing;
   const elevSelect = document.getElementById('select-cam-elevation');
   if (elevSelect) elevSelect.value = preset.composition.elevation;
+  const lensSelect = document.getElementById('select-cam-lens');
+  if (lensSelect && (preset.composition.lens || preset.composition.focalLength)) lensSelect.value = preset.composition.lens || preset.composition.focalLength;
+  const lightSelect = document.getElementById('select-style-lighting');
+  if (lightSelect && preset.style.lighting) lightSelect.value = preset.style.lighting;
 
   // Update Biometric Tags
   updateBiometricTagsUI();
@@ -726,6 +754,36 @@ function handleCustomLikenessChange(val) {
   APP_STATE.conditioning.subjectProfile.customLikenessNotes = val.trim();
 }
 
+function handleSubjectGenderChange(val) {
+  if (!APP_STATE.conditioning.subjectProfile) APP_STATE.conditioning.subjectProfile = {};
+  APP_STATE.conditioning.subjectProfile.gender = val;
+  updateBiometricTagsUI();
+}
+
+function handleSubjectFaceChange(val) {
+  if (!APP_STATE.conditioning.subjectProfile) APP_STATE.conditioning.subjectProfile = {};
+  APP_STATE.conditioning.subjectProfile.facialFeatures = val;
+  updateBiometricTagsUI();
+}
+
+function handleSubjectHairChange(val) {
+  if (!APP_STATE.conditioning.subjectProfile) APP_STATE.conditioning.subjectProfile = {};
+  APP_STATE.conditioning.subjectProfile.hair = val;
+  updateBiometricTagsUI();
+}
+
+function handleSubjectEyesChange(val) {
+  if (!APP_STATE.conditioning.subjectProfile) APP_STATE.conditioning.subjectProfile = {};
+  APP_STATE.conditioning.subjectProfile.eyes = val;
+  updateBiometricTagsUI();
+}
+
+function handleSubjectComplexionChange(val) {
+  if (!APP_STATE.conditioning.subjectProfile) APP_STATE.conditioning.subjectProfile = {};
+  APP_STATE.conditioning.subjectProfile.complexion = val;
+  updateBiometricTagsUI();
+}
+
 function handlePoseAngleChange(val) {
   if (!APP_STATE.conditioning.poseProfile) APP_STATE.conditioning.poseProfile = {};
   APP_STATE.conditioning.poseProfile.angle = val;
@@ -733,9 +791,19 @@ function handlePoseAngleChange(val) {
   if (angleText) angleText.textContent = val;
 }
 
+function handlePosePitchChange(val) {
+  if (!APP_STATE.conditioning.poseProfile) APP_STATE.conditioning.poseProfile = {};
+  APP_STATE.conditioning.poseProfile.pitch = val;
+}
+
 function handleGazeVectorChange(val) {
   if (!APP_STATE.conditioning.poseProfile) APP_STATE.conditioning.poseProfile = {};
   APP_STATE.conditioning.poseProfile.gaze = val;
+}
+
+function handlePoseShouldersChange(val) {
+  if (!APP_STATE.conditioning.poseProfile) APP_STATE.conditioning.poseProfile = {};
+  APP_STATE.conditioning.poseProfile.shoulders = val;
 }
 
 function handleCamFramingChange(val) {
@@ -748,6 +816,19 @@ function handleCamFramingChange(val) {
 function handleCamElevationChange(val) {
   if (!APP_STATE.conditioning.compositionProfile) APP_STATE.conditioning.compositionProfile = {};
   APP_STATE.conditioning.compositionProfile.elevation = val;
+}
+
+function handleFocalLengthChange(val) {
+  if (!APP_STATE.conditioning.compositionProfile) APP_STATE.conditioning.compositionProfile = {};
+  APP_STATE.conditioning.compositionProfile.lens = val;
+  APP_STATE.conditioning.compositionProfile.focalLength = val;
+}
+
+function handleLightingChange(val) {
+  if (!APP_STATE.conditioning.styleProfile) APP_STATE.conditioning.styleProfile = {};
+  APP_STATE.conditioning.styleProfile.lighting = val;
+  const lightEl = document.getElementById('attr-lighting-text');
+  if (lightEl) lightEl.textContent = val;
 }
 
 function setConditioningPreset(mode) {
@@ -834,18 +915,38 @@ function syncConditioningUI() {
     if (likenessInput && cond.subjectProfile.customLikenessNotes !== undefined) {
       likenessInput.value = cond.subjectProfile.customLikenessNotes;
     }
+    const genderSelect = document.getElementById('select-subject-gender');
+    if (genderSelect && cond.subjectProfile.gender) genderSelect.value = cond.subjectProfile.gender;
+    const faceSelect = document.getElementById('select-subject-face');
+    if (faceSelect && cond.subjectProfile.facialFeatures) faceSelect.value = cond.subjectProfile.facialFeatures;
+    const hairSelect = document.getElementById('select-subject-hair');
+    if (hairSelect && cond.subjectProfile.hair) hairSelect.value = cond.subjectProfile.hair;
+    const eyesSelect = document.getElementById('select-subject-eyes');
+    if (eyesSelect && cond.subjectProfile.eyes) eyesSelect.value = cond.subjectProfile.eyes;
+    const compxSelect = document.getElementById('select-subject-complexion');
+    if (compxSelect && cond.subjectProfile.complexion) compxSelect.value = cond.subjectProfile.complexion;
   }
   if (cond.poseProfile) {
     const poseSelect = document.getElementById('select-pose-angle');
     if (poseSelect && cond.poseProfile.angle) poseSelect.value = cond.poseProfile.angle;
+    const pitchSelect = document.getElementById('select-pose-pitch');
+    if (pitchSelect && cond.poseProfile.pitch) pitchSelect.value = cond.poseProfile.pitch;
     const gazeSelect = document.getElementById('select-gaze-vector');
     if (gazeSelect && cond.poseProfile.gaze) gazeSelect.value = cond.poseProfile.gaze;
+    const shouldersSelect = document.getElementById('select-pose-shoulders');
+    if (shouldersSelect && cond.poseProfile.shoulders) shouldersSelect.value = cond.poseProfile.shoulders;
   }
   if (cond.compositionProfile) {
     const framingSelect = document.getElementById('select-cam-framing');
     if (framingSelect && cond.compositionProfile.framing) framingSelect.value = cond.compositionProfile.framing;
     const elevSelect = document.getElementById('select-cam-elevation');
     if (elevSelect && cond.compositionProfile.elevation) elevSelect.value = cond.compositionProfile.elevation;
+    const lensSelect = document.getElementById('select-cam-lens');
+    if (lensSelect && (cond.compositionProfile.lens || cond.compositionProfile.focalLength)) lensSelect.value = cond.compositionProfile.lens || cond.compositionProfile.focalLength;
+  }
+  if (cond.styleProfile) {
+    const lightSelect = document.getElementById('select-style-lighting');
+    if (lightSelect && cond.styleProfile.lighting) lightSelect.value = cond.styleProfile.lighting;
   }
 
   updateBiometricTagsUI();
@@ -1302,6 +1403,19 @@ function analyzeReferenceImage(imageSrc) {
       if (likenessInput && APP_STATE.conditioning.subjectProfile && APP_STATE.conditioning.subjectProfile.customLikenessNotes) {
         likenessInput.value = APP_STATE.conditioning.subjectProfile.customLikenessNotes;
       }
+      const genderSelect = document.getElementById('select-subject-gender');
+      if (genderSelect && APP_STATE.conditioning.subjectProfile && APP_STATE.conditioning.subjectProfile.gender) {
+        genderSelect.value = APP_STATE.conditioning.subjectProfile.gender;
+      }
+      const hairSelect = document.getElementById('select-subject-hair');
+      if (hairSelect && APP_STATE.conditioning.subjectProfile && APP_STATE.conditioning.subjectProfile.hair) {
+        hairSelect.value = APP_STATE.conditioning.subjectProfile.hair;
+      }
+      const compxSelect = document.getElementById('select-subject-complexion');
+      if (compxSelect && APP_STATE.conditioning.subjectProfile && APP_STATE.conditioning.subjectProfile.complexion) {
+        compxSelect.value = APP_STATE.conditioning.subjectProfile.complexion;
+      }
+
       const poseSelect = document.getElementById('select-pose-angle');
       if (poseSelect && APP_STATE.conditioning.poseProfile && APP_STATE.conditioning.poseProfile.angle) {
         poseSelect.value = APP_STATE.conditioning.poseProfile.angle;
@@ -1310,6 +1424,11 @@ function analyzeReferenceImage(imageSrc) {
       if (gazeSelect && APP_STATE.conditioning.poseProfile && APP_STATE.conditioning.poseProfile.gaze) {
         gazeSelect.value = APP_STATE.conditioning.poseProfile.gaze;
       }
+      const pitchSelect = document.getElementById('select-pose-pitch');
+      if (pitchSelect && APP_STATE.conditioning.poseProfile && APP_STATE.conditioning.poseProfile.pitch) {
+        pitchSelect.value = APP_STATE.conditioning.poseProfile.pitch;
+      }
+
       const framingSelect = document.getElementById('select-cam-framing');
       if (framingSelect && APP_STATE.conditioning.compositionProfile && APP_STATE.conditioning.compositionProfile.framing) {
         framingSelect.value = APP_STATE.conditioning.compositionProfile.framing;
@@ -1317,6 +1436,10 @@ function analyzeReferenceImage(imageSrc) {
       const elevSelect = document.getElementById('select-cam-elevation');
       if (elevSelect && APP_STATE.conditioning.compositionProfile && APP_STATE.conditioning.compositionProfile.elevation) {
         elevSelect.value = APP_STATE.conditioning.compositionProfile.elevation;
+      }
+      const lightSelect = document.getElementById('select-style-lighting');
+      if (lightSelect && APP_STATE.conditioning.styleProfile && APP_STATE.conditioning.styleProfile.lighting) {
+        lightSelect.value = APP_STATE.conditioning.styleProfile.lighting;
       }
 
       uploadReferenceImageBackground(imageSrc);
@@ -1331,7 +1454,7 @@ function analyzeReferenceImage(imageSrc) {
 
 function buildConditioningPayload(userPrompt) {
   const cond = APP_STATE.conditioning;
-  const refWeight = cond.referenceWeight !== undefined ? cond.referenceWeight : 85;
+  const refWeight = cond.referenceWeight !== undefined ? cond.referenceWeight : 88;
   const subj = cond.subjectProfile || {};
   const pose = cond.poseProfile || {};
   const comp = cond.compositionProfile || {};
@@ -1341,83 +1464,115 @@ function buildConditioningPayload(userPrompt) {
   // 1. Identity Likeness Segment
   let identitySegment = '';
   if (cond.identityWeight >= 20) {
-    const strictness = cond.identityWeight >= 85 
-      ? "identical person, exact facial likeness and bone structure, defined jawline and cheekbones" 
-      : (cond.identityWeight >= 60 ? "strong facial likeness and matching features" : "subtle resemblance");
-    
-    const likenessNotes = subj.customLikenessNotes ? `, ${subj.customLikenessNotes}` : '';
-    const hair = subj.hair ? `with ${subj.hair}` : 'matching hair';
-    const eyes = subj.eyes ? `${subj.eyes}` : 'matching eye color';
-    const face = subj.facialFeatures ? `${subj.facialFeatures}` : 'distinctive facial structure';
-    const compx = subj.complexion ? `${subj.complexion}` : 'matching skin tone';
-    const gender = subj.gender ? `${subj.gender}` : 'person';
+    const gender = subj.gender || 'Person';
+    const hair = subj.hair || 'matching hair';
+    const eyes = subj.eyes || 'matching eye color';
+    const face = subj.facialFeatures || 'defined facial bone structure';
+    const compx = subj.complexion || 'matching skin tone';
+    const custom = subj.customLikenessNotes ? `, ${subj.customLikenessNotes}` : '';
 
-    identitySegment = `award-winning photograph featuring the exact same ${gender} from reference image ${hair}, ${eyes}, ${face}, ${compx}${likenessNotes}, preserving ${strictness}`;
+    if (cond.identityWeight >= 85) {
+      identitySegment = `((exact biometric likeness of ${gender}:1.45)), ((identical facial bone structure:1.4)), matching ${face}, ${eyes}, ${hair}, ${compx}${custom}, highly defined jawline, cheekbones and facial symmetry`;
+    } else if (cond.identityWeight >= 60) {
+      identitySegment = `((strong facial likeness of ${gender}:1.25)), matching facial features, ${hair}, ${eyes}, ${compx}${custom}`;
+    } else {
+      identitySegment = `resemblance to ${gender} with ${hair}, ${eyes}`;
+    }
   }
 
   // 2. Pose & Facial Orientation Segment
   let poseSegment = '';
   if (cond.poseWeight >= 20) {
     const angle = pose.angle || attrs.faceAngle || "3/4 Turn Facing Left (25°)";
-    const gaze = pose.gaze || "Direct Eye Contact with Camera";
-    const posture = pose.shoulders || "matching shoulders and torso angle";
-    const strictness = cond.poseWeight >= 85 ? "exact matching pose and orientation" : "similar pose";
-    poseSegment = `captured in ${strictness}: head turned at ${angle}, eyes looking in ${gaze}, ${posture}, matching head tilt and neck posture`;
+    const pitch = pose.pitch || "Level Head Tilt (0°)";
+    const gaze = pose.gaze || "Direct Eye Contact with Camera (Lens Locked)";
+    const shoulders = pose.shoulders || "Shoulders angled 3/4 to camera matching head turn";
+
+    if (cond.poseWeight >= 85) {
+      poseSegment = `((exact anatomical pose and facial orientation locked:1.4)), head yaw angle turned ${angle}, vertical tilt ${pitch}, gaze vector locked on ${gaze}, shoulder alignment: ${shoulders}, locked head tilt and neck posture`;
+    } else if (cond.poseWeight >= 60) {
+      poseSegment = `((pose alignment:1.25)): head turned ${angle}, vertical tilt ${pitch}, eyes ${gaze}, ${shoulders}`;
+    } else {
+      poseSegment = `head turned ${angle}, ${gaze}`;
+    }
   }
 
-  // 3. Camera Angle & Composition Segment
+  // 3. Camera Angle & Framing Composition Segment
   let compSegment = '';
   if (cond.compositionWeight >= 20) {
-    const framing = comp.framing || attrs.framing || "Tight Close-up Portrait (85mm Lens)";
+    const framing = comp.framing || attrs.framing || "Tight Close-up Portrait (85mm Lens, head and shoulders filling 70% of frame)";
     const elevation = comp.elevation || "Eye-Level Perspective";
-    const focal = comp.focalLength || "85mm lens";
-    const strictness = cond.compositionWeight >= 85 ? "exact camera composition" : "matching framing";
-    compSegment = `shot with ${strictness}: ${framing}, ${elevation}, ${focal}, identical subject placement in frame, shallow depth of field`;
+    const lens = comp.lens || comp.focalLength || "85mm f/1.4 prime lens with creamy bokeh";
+
+    if (cond.compositionWeight >= 85) {
+      compSegment = `((strict camera framing and perspective:1.4)), shot on ${lens}, ${framing}, ${elevation}, optical shallow depth of field, centered subject positioning`;
+    } else if (cond.compositionWeight >= 60) {
+      compSegment = `((camera composition:1.25)): ${framing}, ${elevation}, shot on ${lens}`;
+    } else {
+      compSegment = `framed in ${framing}, ${elevation}`;
+    }
   }
 
   // 4. Style, Lighting & Atmosphere Segment
   let styleSegment = '';
   if (cond.styleWeight >= 20) {
     const lighting = style.lighting || attrs.lighting || "Dramatic Directional Studio Lighting with chiaroscuro contrast";
-    styleSegment = `${lighting}, matching key light and rim light direction, color temperature, and contrast`;
+    const palette = style.palette || attrs.palette || [];
+    const paletteStr = palette.slice(0, 3).join(', ');
+
+    if (cond.styleWeight >= 85) {
+      styleSegment = `((lighting and atmosphere:1.35)): ${lighting}, matching directional key light and rim lighting, color palette: [${paletteStr}]`;
+    } else if (cond.styleWeight >= 60) {
+      styleSegment = `${lighting}, subtle rim illumination, palette: [${paletteStr}]`;
+    } else {
+      styleSegment = `subtle hint of ${lighting}`;
+    }
   }
 
-  // Synthesis based on Master Reference Weight
-  const conditioningDirectives = [identitySegment, poseSegment, compSegment, styleSegment].filter(Boolean);
+  // Synthesis based on Master Reference vs Prompt Weighting
   let finalPrompt = userPrompt;
+  const conditioningDirectives = [identitySegment, poseSegment, compSegment, styleSegment].filter(Boolean);
 
   if (conditioningDirectives.length > 0) {
-    if (refWeight >= 80) {
-      // Reference-dominant (Strict Visual Conditioning Lock)
-      finalPrompt = `${conditioningDirectives.join(', ')}, recontextualized as: ${userPrompt}, 8k uhd, masterpiece photography, highly detailed, photorealistic, sharp focus`;
-    } else if (refWeight >= 55) {
-      // Targeted Guidance (Balanced fusion)
-      finalPrompt = `${userPrompt}, starring the exact same person (${identitySegment}), maintaining reference stance (${poseSegment}), framed in ${compSegment}, with ${styleSegment}, 8k uhd, cinematic realism`;
-    } else if (refWeight >= 30) {
-      // Loose Inspiration
-      finalPrompt = `${userPrompt}, subtle resemblance to ${subj.gender || 'person'} with ${subj.hair || 'matching hair'}, ${styleSegment}`;
+    if (refWeight >= 75) {
+      // Reference-Dominant Visual Anchor: The reference locks the subject, pose and camera.
+      // The user's prompt is integrated strictly as the scene, role, attire and environment.
+      finalPrompt = `${identitySegment ? identitySegment + ', ' : ''}${poseSegment ? poseSegment + ', ' : ''}${compSegment ? compSegment + ', ' : ''}${styleSegment ? styleSegment + ', ' : ''}styled in scene: ${userPrompt}, 8k uhd, masterpiece photography, highly detailed, photorealistic skin texture, sharp focus`;
+    } else if (refWeight >= 50) {
+      // Balanced Fusion (50/50): Subject and pose anchored, scene dynamically styled
+      finalPrompt = `${identitySegment ? identitySegment + ', ' : ''}${userPrompt}, maintaining stance: ${poseSegment ? poseSegment + ', ' : ''}${compSegment ? compSegment + ', ' : ''}${styleSegment ? styleSegment + ', ' : ''}8k uhd, cinematic realism`;
+    } else if (refWeight >= 25) {
+      // Prompt Dominant: Prompt leads, subtle likeness and style
+      finalPrompt = `${userPrompt}, featuring ${subj.gender || 'character'} (${identitySegment}), ${styleSegment ? styleSegment + ', ' : ''}8k uhd`;
     } else {
-      // Creative Freedom (Reference ignored or minimal)
-      finalPrompt = userPrompt;
+      // Loose Inspiration
+      finalPrompt = `${userPrompt}, subtle inspiration from ${subj.gender || 'person'}, ${styleSegment}`;
     }
   }
 
   // Anti-Drift Negative Conditioning Tokens
   const antiDriftTokens = [];
   if (cond.identityWeight >= 50) {
-    antiDriftTokens.push("different person", "wrong face", "generic face", "altered facial features", "different eye color", "different hair", "morphed face");
+    antiDriftTokens.push("(different person:1.45)", "(different face:1.45)", "generic face", "wrong facial features", "altered jawline", "different eyes", "morphed face", "face swap", "double face", "deformed face");
   }
   if (cond.poseWeight >= 50) {
-    antiDriftTokens.push("different pose", "turned away", "wrong head angle", "opposite gaze", "looking away from camera", "unnatural head tilt");
+    antiDriftTokens.push("(different pose:1.4)", "turned away", "wrong head turn", "opposite gaze", "looking away from camera", "head turned down", "profile view", "unnatural head tilt");
   }
   if (cond.compositionWeight >= 50) {
-    antiDriftTokens.push("wrong framing", "cropped head", "distorted perspective", "wide angle lens distortion");
+    antiDriftTokens.push("(wrong camera angle:1.4)", "wrong framing", "wide lens distortion", "cropped head", "bird eye view", "zoomed out", "misaligned composition");
   }
 
   return {
     fullPrompt: finalPrompt,
     antiDriftTokens: antiDriftTokens,
-    directives: conditioningDirectives
+    directives: conditioningDirectives,
+    blocks: {
+      identity: identitySegment,
+      pose: poseSegment,
+      composition: compSegment,
+      style: styleSegment,
+      context: userPrompt
+    }
   };
 }
 
@@ -1524,8 +1679,9 @@ async function generateImage() {
     const isConditioningActive = APP_STATE.imagineMode === 'img2img' && (APP_STATE.referenceImageBase64 || APP_STATE.conditioning.referenceUrl);
 
     let antiDriftNegative = "";
+    let payload = null;
     if (isConditioningActive) {
-      const payload = buildConditioningPayload(fullPrompt);
+      payload = buildConditioningPayload(fullPrompt);
       fullPrompt = payload.fullPrompt;
       if (payload.antiDriftTokens && payload.antiDriftTokens.length > 0) {
         antiDriftNegative = payload.antiDriftTokens.join(', ');
@@ -1570,6 +1726,10 @@ async function generateImage() {
       imageUrl += `&image=${encodeURIComponent(activeRefUrl)}`;
     }
 
+    if (APP_STATE.settings.pollenKey) {
+      imageUrl += `&token=${encodeURIComponent(APP_STATE.settings.pollenKey)}`;
+    }
+
     // Preload image in memory to ensure smooth reveal
     await new Promise((resolve, reject) => {
       const img = new Image();
@@ -1579,8 +1739,11 @@ async function generateImage() {
         resolve(img);
       };
       img.onerror = () => {
-        // Fallback to standard url if model query parameter failed
-        const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seedVal}&nologo=true`;
+        // Fallback to standard url preserving conditioned latents if model query parameter failed
+        let fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seedVal}&nologo=true`;
+        if (APP_STATE.settings.pollenKey) {
+          fallbackUrl += `&token=${encodeURIComponent(APP_STATE.settings.pollenKey)}`;
+        }
         imgElement.src = fallbackUrl;
         resolve(imgElement);
       };
@@ -1646,6 +1809,23 @@ async function generateImage() {
       if (compareBtn) compareBtn.classList.add('hidden');
       if (quickToggleBtn) quickToggleBtn.classList.add('hidden');
       if (condBadge) condBadge.classList.add('hidden');
+    }
+
+    // Update Latents & Token Breakdown Inspector
+    if (isConditioningActive && payload && payload.blocks) {
+      const inspector = document.getElementById('conditioning-tokens-inspector');
+      if (inspector) inspector.classList.remove('hidden');
+      const idEl = document.getElementById('token-text-identity');
+      if (idEl) idEl.textContent = payload.blocks.identity || '(Identity unconditioned)';
+      const poseEl = document.getElementById('token-text-pose');
+      if (poseEl) poseEl.textContent = payload.blocks.pose || '(Pose unconditioned)';
+      const compEl = document.getElementById('token-text-composition');
+      if (compEl) compEl.textContent = payload.blocks.composition || '(Framing unconditioned)';
+      const ctxEl = document.getElementById('token-text-context');
+      if (ctxEl) ctxEl.textContent = payload.blocks.context || prompt;
+    } else {
+      const inspector = document.getElementById('conditioning-tokens-inspector');
+      if (inspector) inspector.classList.add('hidden');
     }
 
     // Reveal output
@@ -1794,9 +1974,26 @@ function boostConditioningAndRegenerate(channel) {
     const lockEl = document.getElementById('lock-composition');
     if (lockEl) lockEl.checked = true;
     showToast("Locked Camera Framing to " + APP_STATE.conditioning.compositionWeight + "%", "success");
+  } else if (channel === 'full') {
+    setConditioningPreset('full');
+    showToast("Applied Full Visual Clone Preset (98% Identity, 95% Pose, 95% Framing)!", "success");
   }
 
   generateImage();
+}
+
+function copyConditionedPrompt() {
+  triggerHaptic();
+  if (APP_STATE.currentImage && APP_STATE.currentImage.fullPrompt) {
+    navigator.clipboard.writeText(APP_STATE.currentImage.fullPrompt);
+    showToast("Conditioned latent prompt copied to clipboard!", "success");
+  } else {
+    const promptInput = document.getElementById('prompt-input');
+    const userP = promptInput ? promptInput.value.trim() : 'masterpiece portrait';
+    const payload = buildConditioningPayload(userP);
+    navigator.clipboard.writeText(payload.fullPrompt);
+    showToast("Synthesized latent conditioning prompt copied!", "success");
+  }
 }
 
 function copyCurrentPrompt() {
