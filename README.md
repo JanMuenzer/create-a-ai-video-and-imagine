@@ -18,12 +18,24 @@ Access the live web app directly on your phone or desktop:
 
 ## ✨ Features at a Glance
 
-### 🎨 1. Imagine Studio (AI Image Generation)
+### 🎨 1. Imagine Studio & Precision Visual Conditioning
 * **High-Res Text-to-Image**: Powered by Flux Schnell, Flux Realism, and Turbo neural pipelines.
-* **Image Remix (Image-to-Image)**: Upload any reference image and guide the AI to reinterpret, enhance, or transform it.
+* **Targeted Visual Conditioning Studio (Reference Image Control)**:
+  * **Strict Identity Preservation**: Guarantees facial bone structure, jawline definition, cheekbones, eye shape/color, hair style, and skin undertones matching the referenced person.
+  * **Pose & Facial Orientation Transfer**: High-fidelity transfer of 3D head yaw (0° to 90° turn), vertical tilt (pitch), eye gaze vector (direct camera eye contact vs. looking away), and shoulder posture.
+  * **Camera Angle & Composition Lock**: Optical framing control across 6 shot scales (tight 85mm close-up, medium bust, cowboy, full figure, wide environmental, macro) and elevations (eye-level, low-angle heroic, high-angle dramatic, canted Dutch tilt).
+  * **Adjustable Prompt vs. Reference Weighting**: Master balance slider from 0% (Creative Prompt Dominance) to 100% (Strict Visual Clamp) with dynamic dual gauge.
+  * **Separate Channels & Dedicated Modes**:
+    * `Full Visual Clone`: Maximum clamp on identity (98%), pose (95%), camera framing (95%), and style (80%).
+    * `Identity Lock (Scene & Pose Remix)`: Preserves facial likeness while allowing free exploration of new poses, actions, costumes, and environments.
+    * `Pose & Orientation Transfer`: Clones the exact head turn, gaze, and posture onto any new character or aesthetic.
+    * `Camera Angle & Shot Composition Lock`: Clones the exact cinematic lens, framing, and camera elevation.
+    * `Style & Lighting Essence`: Borrows the lighting contrast, color palette, and mood.
+    * `Custom Precision Matrix`: Fully decoupled independent channel sliders and lock toggles.
+  * **Live Reference Comparison & Alignment Inspector**: Side-by-side comparison modal with metrics, ghost toggle overlay on canvas, 1-click re-tuning boosters, and transparent latent prompt token inspector.
 * **Uncensored Mode**: Toggle off restrictive content filters to generate unfiltered artistic concepts, gritty cinema, dark fantasy, and anatomical art without artificial censorship blocks.
 * **AI Prompt Expander**: One-click intelligent prompt enhancer that introduces volumetric lighting, octane rendering tags, 85mm anamorphic lenses, and atmospheric realism.
-* **Aspect Ratios**: 1:1 (Square), 9:16 (Stories/Reels/TikTok), 16:9 (Cinematic Widescreen), 4:3 (Classic), and 21:9 (Ultra-wide).
+* **Aspect Ratios**: 1:1 (Square), 9:16 (Stories/Reels/TikTok), 16:9 (Cinematic Widescreen), 4:3 (Classic), and 21:9 (Ultra-wide) with 1-click Reference Ratio Match.
 * **Style Modulation Chips**: Photorealism, Cyberpunk, Dark Fantasy, Anime Masterpiece, Surrealism, and 35mm Film.
 * **Seed & Latent Controls**: Fixed or randomized seed values for exact visual reproducibility.
 
