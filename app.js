@@ -20,9 +20,9 @@ const APP_STATE = {
   referenceImageUrl: '',
   conditioning: {
     mode: 'full', // 'full' | 'identity' | 'pose' | 'composition' | 'style' | 'custom'
-    referenceWeight: 85, // Master reference conditioning influence (0-100%)
+    referenceWeight: 88, // Master reference conditioning influence (0-100%)
     identityWeight: 95,  // Identity & facial likeness preservation (0-100%)
-    poseWeight: 90,      // Pose & facial orientation fidelity (0-100%)
+    poseWeight: 92,      // Pose & facial orientation fidelity (0-100%)
     compositionWeight: 90, // Camera angle & composition fidelity (0-100%)
     styleWeight: 75,     // Style, lighting & palette transfer (0-100%)
     identityLocked: true,
@@ -34,20 +34,22 @@ const APP_STATE = {
       name: 'Elena',
       gender: 'Woman (Early 20s)',
       hair: 'Dark brunette wavy hair with middle part',
-      eyes: 'Hazel almond eyes',
-      facialFeatures: 'Sculpted jawline, defined cheekbones, full lips',
-      complexion: 'Warm olive complexion',
-      customLikenessNotes: 'Elena, athletic elegant facial structure'
+      eyes: 'Hazel almond eyes, intense expressive gaze',
+      facialFeatures: 'Sculpted jawline, defined cheekbones, full lips, natural brows',
+      complexion: 'Warm olive complexion with natural skin texture',
+      customLikenessNotes: 'Elena, athletic elegant facial structure and defined cheekbones'
     },
     poseProfile: {
       angle: '3/4 Turn Facing Left (25°)',
-      gaze: 'Direct Eye Contact with Camera',
-      shoulders: 'Shoulders angled 3/4 to camera'
+      pitch: 'Level Head Tilt (0°)',
+      gaze: 'Direct Eye Contact with Camera (Lens Locked)',
+      shoulders: 'Shoulders angled 3/4 to camera matching head turn'
     },
     compositionProfile: {
-      framing: 'Tight Close-up Portrait (85mm Lens)',
+      framing: 'Tight Close-up Portrait (85mm Lens, head and shoulders filling 70% of frame)',
       elevation: 'Eye-Level Perspective',
-      focalLength: '85mm f/1.4'
+      focalLength: '85mm f/1.4',
+      lens: '85mm f/1.4 prime lens with creamy bokeh'
     },
     styleProfile: {
       lighting: 'Dramatic Directional Studio Lighting with chiaroscuro contrast',
@@ -68,6 +70,7 @@ const APP_STATE = {
   isGeneratingVideo: false,
   settings: {
     githubToken: localStorage.getItem('nexus_gh_token') || '',
+    pollenKey: localStorage.getItem('nexus_pollen_key') || '',
     falKey: localStorage.getItem('nexus_fal_key') || '',
     hfToken: localStorage.getItem('nexus_hf_token') || '',
     customUrl: localStorage.getItem('nexus_custom_url') || '',
@@ -202,6 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load saved settings into modal inputs
   if (document.getElementById('github-token-input')) {
     document.getElementById('github-token-input').value = APP_STATE.settings.githubToken;
+  }
+  if (document.getElementById('pollen-key-input')) {
+    document.getElementById('pollen-key-input').value = APP_STATE.settings.pollenKey;
   }
   if (document.getElementById('fal-key-input')) {
     document.getElementById('fal-key-input').value = APP_STATE.settings.falKey;

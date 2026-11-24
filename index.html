@@ -949,6 +949,34 @@
               </div>
               <p id="meta-prompt-snippet" class="text-slate-400 truncate max-w-xs italic"></p>
             </div>
+
+            <!-- Conditioning Latents & Synthesized Tokens Inspector -->
+            <div id="conditioning-tokens-inspector" class="hidden mt-3 p-3 rounded-xl bg-brand-dark/80 border border-brand-border text-xs space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-200 flex items-center gap-1.5 text-[11px]">
+                  <i class="fa-solid fa-code text-brand-cyan"></i> Synthesized Conditioning Latents & Tokens
+                </span>
+                <button type="button" onclick="copyConditionedPrompt()" class="text-[10px] text-brand-cyan hover:underline flex items-center gap-1">
+                  <i class="fa-solid fa-copy"></i> Copy Full Latent Prompt
+                </button>
+              </div>
+
+              <!-- Channel Token Highlights -->
+              <div class="space-y-1.5 text-[10px] font-mono">
+                <div id="token-block-identity" class="p-1.5 rounded bg-brand-surface border border-brand-neon/30 text-purple-300 leading-relaxed">
+                  <span class="text-brand-neon font-bold">[Identity Anchor]:</span> <span id="token-text-identity">Loading...</span>
+                </div>
+                <div id="token-block-pose" class="p-1.5 rounded bg-brand-surface border border-cyan-500/30 text-cyan-300 leading-relaxed">
+                  <span class="text-cyan-400 font-bold">[Pose Vector]:</span> <span id="token-text-pose">Loading...</span>
+                </div>
+                <div id="token-block-composition" class="p-1.5 rounded bg-brand-surface border border-pink-500/30 text-pink-300 leading-relaxed">
+                  <span class="text-pink-400 font-bold">[Camera Framing]:</span> <span id="token-text-composition">Loading...</span>
+                </div>
+                <div id="token-block-context" class="p-1.5 rounded bg-brand-surface border border-blue-500/30 text-blue-300 leading-relaxed">
+                  <span class="text-blue-400 font-bold">[Prompt Scene & Attire]:</span> <span id="token-text-context">Loading...</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1353,9 +1381,18 @@
         <!-- Custom API Endpoints (Local Automatic1111 / ComfyUI / Fal / Replicate) -->
         <div class="space-y-3">
           <h4 class="font-semibold text-slate-200">Custom API & Endpoints (Optional)</h4>
+
+          <div class="space-y-1">
+            <label class="text-slate-300 flex items-center justify-between">
+              <span>Pollinations / Pollen API Key (Instant Unlimited, Zero Rate Limits)</span>
+              <a href="https://enter.pollinations.ai" target="_blank" class="text-brand-cyan hover:underline text-[10px]">Get Key</a>
+            </label>
+            <input type="password" id="pollen-key-input" placeholder="pk_xxxxxxxxxxxx" class="w-full bg-brand-dark p-2 rounded-lg border border-brand-border text-slate-200 font-mono text-xs outline-none focus:border-brand-500">
+            <p class="text-[10px] text-slate-500">Removes anonymous IP cooldown limits for instantaneous synthesis.</p>
+          </div>
           
           <div class="space-y-1">
-            <label class="text-slate-300">Fal.ai API Key (Kling / Luma Video)</label>
+            <label class="text-slate-300">Fal.ai API Key (Kling / Luma Video & InstantID)</label>
             <input type="password" id="fal-key-input" placeholder="key-xxxxxxxxxxxx" class="w-full bg-brand-dark p-2 rounded-lg border border-brand-border text-slate-200 font-mono text-xs outline-none">
           </div>
 
@@ -1525,10 +1562,16 @@
       <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-brand-border">
         <div class="flex flex-wrap items-center gap-2 text-xs">
           <button type="button" onclick="boostConditioningAndRegenerate('identity')" class="px-3 py-1.5 rounded-lg bg-brand-500/20 hover:bg-brand-500/30 text-brand-200 border border-brand-500/40 flex items-center gap-1.5 transition-all">
-            <i class="fa-solid fa-arrow-trend-up"></i> Boost Identity Likeness (+10%)
+            <i class="fa-solid fa-fingerprint text-brand-neon"></i> Boost Identity (+10%)
           </button>
           <button type="button" onclick="boostConditioningAndRegenerate('pose')" class="px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/40 flex items-center gap-1.5 transition-all">
-            <i class="fa-solid fa-arrow-trend-up"></i> Tighten Pose Alignment (+10%)
+            <i class="fa-solid fa-person-walking text-cyan-400"></i> Tighten Pose (+10%)
+          </button>
+          <button type="button" onclick="boostConditioningAndRegenerate('composition')" class="px-3 py-1.5 rounded-lg bg-pink-500/20 hover:bg-pink-500/30 text-pink-200 border border-pink-500/40 flex items-center gap-1.5 transition-all">
+            <i class="fa-solid fa-camera text-pink-400"></i> Lock Camera Framing (+10%)
+          </button>
+          <button type="button" onclick="boostConditioningAndRegenerate('full')" class="px-3 py-1.5 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-500/40 flex items-center gap-1.5 transition-all">
+            <i class="fa-solid fa-bullseye text-brand-neon"></i> Apply Full Visual Clone
           </button>
         </div>
         <button type="button" onclick="closeComparisonModal()" class="px-4 py-1.5 rounded-lg bg-brand-card hover:bg-brand-border text-slate-200 text-xs font-semibold transition-all">
